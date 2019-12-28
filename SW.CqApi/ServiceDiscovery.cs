@@ -32,12 +32,7 @@ namespace SW.CqApi
 
 
         private readonly ILogger<ServiceDiscovery> logger;
-
         private readonly IDictionary<string, IDictionary<string, HandlerInfo>> resourceHandlers = new Dictionary<string, IDictionary<string, HandlerInfo>>(StringComparer.OrdinalIgnoreCase);
-
-        //private readonly IDictionary<Type, IDictionary<string, Type>> serviceCatalog = new Dictionary<Type, IDictionary<string, Type>>();
-        //private readonly IDictionary<string, ICollection<Type>> modelServices = new Dictionary<string, ICollection<Type>>(StringComparer.OrdinalIgnoreCase);
-        //private readonly IDictionary<string, Type> models = new Dictionary<string, Type>();
 
         public ServiceDiscovery(IServiceProvider serviceProvider, ILogger<ServiceDiscovery> logger)
         {
@@ -82,6 +77,17 @@ namespace SW.CqApi
                         var handlerNameAttribute = serviceType.GetCustomAttribute<HandlerNameAttribute>();
                         var handlerKey = handlerNameAttribute == null ? "put/key" : $"post/key/{handlerNameAttribute.Name.ToLower()}";
                         resourceHandlers[resourceName][handlerKey] = new HandlerInfo
+                        {
+                            HandlerType = serviceType,
+                            Method = interfaceType.GetMethod("Handle"),
+                            ArgumentTypes = interfaceType.GetMethod("Handle").GetParameters().Select(p => p.ParameterType).ToList()
+                        };
+                    }
+
+                    if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IDeleteHandler<>))
+                    {
+
+                        resourceHandlers[resourceName]["delete/key"] = new HandlerInfo
                         {
                             HandlerType = serviceType,
                             Method = interfaceType.GetMethod("Handle"),

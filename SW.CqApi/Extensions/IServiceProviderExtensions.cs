@@ -3,6 +3,7 @@ using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
@@ -10,22 +11,9 @@ namespace SW.CqApi
 {
     internal static class IServiceProviderExtensions
     {
-
-        //private class DefaultRequestContext : IRequestContext
-        //{
-        //    public ClaimsPrincipal User => new ClaimsPrincipal();
-        //    public IReadOnlyCollection<RequestValue> Values => new List<RequestValue>();
-        //    public bool IsValid => true;
-        //}
-
-        public static IRequestContext GetRequestContext(this IServiceProvider serviceProvider)
+        static IRequestContext GetRequestContext(this IServiceProvider serviceProvider)
         {
-            var requestContext = serviceProvider.GetServices<IRequestContext>().Where(rc => rc.IsValid).SingleOrDefault();
-
-            //if (requestContext == null) 
-            //    return new DefaultRequestContext();
-
-            return requestContext; 
+            return serviceProvider.GetServices<IRequestContext>().Where(rc => rc.IsValid).SingleOrDefault();
         }
 
         public static HandlerInfo ResolveHandler(this IServiceProvider serviceProvider, string resourceName, string handlerKey)
@@ -44,9 +32,7 @@ namespace SW.CqApi
                 
                 throw new SWException($"Could not find required service {handlerKey} for resource {resourceName}.");
 
-            //var svcType = svc.GetType();
-
-            if (handlerInfo.HandlerType.GetCustomAttributes(typeof(ProtectAttribute), false).FirstOrDefault() is ProtectAttribute protectAttribute)
+            if (handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>() is ProtectAttribute protectAttribute)
             {
                 var requestContext = serviceProvider.GetRequestContext();
 
@@ -62,8 +48,8 @@ namespace SW.CqApi
                 {
                     var requiredRoles = new string[] 
                     { 
-                        //$"mapi.{svcType.FullName}.{methodName}", 
-                        $"mapi.{handlerInfo.HandlerType.FullName}.*" 
+                        $"{resourceName}.{handlerInfo.HandlerType.Name}", 
+                        $"{resourceName}.*" 
                     };
 
                     if (!requestContext.User.Claims.Any(c => c.Subject.RoleClaimType  == ClaimTypes.Role && requiredRoles.Contains(c.Value, StringComparer.OrdinalIgnoreCase)))
@@ -73,18 +59,8 @@ namespace SW.CqApi
             }
 
             return handlerInfo;
-            //{
-            //    Method = svcType.GetMethod(methodName),
-            //    Instance = svc,
-            //    ModelType = modelType
 
-            //};
         }
 
-        //public static IDictionary<string, IEnumerable<string>> ListModels(this IServiceProvider serviceProvider)
-        //{
-        //    var sd = serviceProvider.GetRequiredService<ServiceDiscovery>();
-        //    return sd.ListModels();
-        //}
     }
 }

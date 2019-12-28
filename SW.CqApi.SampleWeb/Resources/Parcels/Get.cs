@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
 
-    public class GetByKey : IGetHandler<int>
+    public class Get : IGetHandler<int>
     {
         async public Task<object> Handle(int key, bool lookup = false)
         {

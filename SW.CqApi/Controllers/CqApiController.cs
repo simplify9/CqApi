@@ -8,11 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using SW.PrimitiveTypes;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Schema.Generation;
-using Newtonsoft.Json.Serialization;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi;
+using FluentValidation;
 
 namespace SW.CqApi
 {
@@ -31,21 +27,7 @@ namespace SW.CqApi
             this.logger = logger;
         }
 
-        //[HttpGet]
-        //public IActionResult ListModels()
-        //{
-        //    var sd = serviceProvider.GetRequiredService<ServiceDiscovery>();
-        //    return new OkObjectResult(sd.ListModels());
-        //}
 
-        //[HttpOptions("{resourceName}")]
-        //public IActionResult ListServicesForModel(string resourceName)
-        //{
-        //    Response.Headers.Add("X-Total-Count", "20");
-
-        //    return Ok();
-        //    //return new add(serviceDiscovery.GetServices(resourceName));
-        //}
 
         //[HttpGet("{resourceName}/_lookup")]
         //public async Task<IActionResult> LookupList(string resourceName,
@@ -129,7 +111,8 @@ namespace SW.CqApi
             var handlerInfo = serviceProvider.ResolveHandler(resourceName, "post");
 
             var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes.First());
-            //new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
 
             var result = await (dynamic)handlerInfo.Method.Invoke(handlerInfo.Instance, new object[] { typedParam });
 
@@ -148,13 +131,14 @@ namespace SW.CqApi
 
             var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
             var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
-            //new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
 
             var result = await (dynamic)handlerInfo.Method.Invoke(handlerInfo.Instance, new object[] { keyParam, typedParam });
 
             if (result == null) return NoContent();
 
-            return result;// (new Uri(new Uri($"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}"), $"/mapi/{resourceName}/{key}"), await svc.Create(typedParam));
+            return result;
         }
 
         [HttpPost("{resourceName}/{key}/{command}")]
@@ -165,25 +149,45 @@ namespace SW.CqApi
 
             var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
             var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
-            //new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
 
             var result = await (dynamic)handlerInfo.Method.Invoke(handlerInfo.Instance, new object[] { keyParam, typedParam });
 
             if (result == null) return NoContent();
 
-            return result;// (new Uri(new Uri($"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}"), $"/mapi/{resourceName}/{key}"), await svc.Create(typedParam));
+            return result;
         }
 
-        //[HttpDelete("{resourceName}/{key}")]
-        //public async Task<IActionResult> Delete(string resourceName, string key)
-        //{
-        //    var mapiService = serviceProvider.ResolveService(typeof(IUpdatable<>), resourceName, "Delete");
+        [HttpDelete("{resourceName}/{key}")]
+        public async Task<IActionResult> Delete(string resourceName, string key)
+        {
+            var mapiService = serviceProvider.ResolveHandler(resourceName, "delete/key");
 
-        //    await (dynamic)mapiService.Method.Invoke(mapiService.Instance, new object[] { key });
+            await (dynamic)mapiService.Method.Invoke(mapiService.Instance, new object[] { key });
 
-        //    return NoContent();// (new Uri(new Uri($"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}"), $"/mapi/{resourceName}/{key}"), await svc.Create(typedParam));
-        //}
+            return NoContent();
+        }
 
+        async Task<bool> ValidateInput(object input)
+        {
+            var tvalidator = typeof(IValidator<>).MakeGenericType(input.GetType());
+            var validator = serviceProvider.GetService(tvalidator) as IValidator;
+
+            if (validator == null) return true;
+
+            var validationResult = await validator.ValidateAsync(input);
+
+            if (validationResult.IsValid) return true;
+
+            foreach (var error in validationResult.Errors)
+
+                ModelState.AddModelError("InputValidation", error.ErrorMessage);
+
+
+            return false;
+
+        }
 
         T GetFromQueryString<T>() where T : new()
         {
@@ -191,7 +195,7 @@ namespace SW.CqApi
             var properties = typeof(T).GetProperties();
             foreach (var property in properties)
             {
-                var valueAsString = Request.Query[ property.Name].FirstOrDefault();
+                var valueAsString = Request.Query[property.Name].FirstOrDefault();
                 var value = Object.ConvertValue(valueAsString, property.PropertyType);
 
                 if (value == null)

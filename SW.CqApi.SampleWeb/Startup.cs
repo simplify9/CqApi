@@ -34,7 +34,7 @@ namespace SW.CqApi.SampleWeb
                 config.JsonSerializerOptions.PropertyNamingPolicy = null;
             }) ;
             //services.AddI18n();
-            services.AddCqApi();
+            services.AddCqApi(typeof(Startup).Assembly  );
             //services.AddMapiCallContext(); 
             services.AddRazorPages();
             ;

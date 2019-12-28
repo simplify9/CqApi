@@ -10,8 +10,16 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
     public class Search : ISearchHandler
     {
+        private readonly IRequestContext requestContext;
+
+        public Search(IRequestContext requestContext)
+        {
+            this.requestContext = requestContext;
+        }
+
         async public Task<object> Handle(SearchyRequest searchyRequest, bool lookup = false, string searchPhrase = null)
         {
+            var user = requestContext.User; 
             return new SearchyResponse<CarDto>(); 
         }
     }
