@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUi" Version="5.0.0-rc5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SW.CqApi.SampleModel\SW.CqApi.SampleModel.csproj" />
+    <ProjectReference Include="..\SW.CqApi\SW.CqApi.csproj" />
+  </ItemGroup>
+
+</Project>
