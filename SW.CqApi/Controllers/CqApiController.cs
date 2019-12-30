@@ -19,42 +19,15 @@ namespace SW.CqApi
     public class CqApiController : ControllerBase
     {
         private readonly IServiceProvider serviceProvider;
+        private readonly ServiceDiscovery serviceDiscovery;
         private readonly ILogger<CqApiController> logger;
 
-        public CqApiController(IServiceProvider serviceProvider, ILogger<CqApiController> logger)
+        public CqApiController(IServiceProvider serviceProvider)
         {
             this.serviceProvider = serviceProvider;
-            this.logger = logger;
+            logger = serviceProvider.GetService<ILogger<CqApiController>>();
+            serviceDiscovery = serviceProvider.GetService<ServiceDiscovery>();
         }
-
-
-
-        //[HttpGet("{resourceName}/_lookup")]
-        //public async Task<IActionResult> LookupList(string resourceName,
-        //    [FromQuery(Name = "search")] string searchPhrase,
-        //    [FromQuery(Name = "filter")] string[] filters,
-        //    [FromQuery(Name = "sort")] string[] sorts,
-        //    [FromQuery(Name = "size")] int pageSize,
-        //    [FromQuery(Name = "page")] int pageIndex,
-        //    [FromQuery(Name = "count")] bool countRows
-        //    )
-        //{
-        //    var mapiService = serviceProvider.ResolveService(typeof(ILookable<>), resourceName, "LookupList");
-
-        //    var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
-
-        //    return Ok(await (dynamic)mapiService.Method.Invoke(mapiService.Instance, new object[] { searchPhrase, searchyRequest }));
-        //}
-
-        //[HttpGet("{resourceName}/_lookup/{key}")]
-        //public async Task<IActionResult> LookupValue(string resourceName, string key)
-        //{
-        //    var mapiService = serviceProvider.ResolveService(typeof(ILookable<>), resourceName, "LookupValue");
-
-        //    var result = await (dynamic)mapiService.Method.Invoke(mapiService.Instance, new object[] { key });
-        //    if (result == null) return NotFound();
-        //    return Ok(result);
-        //}
 
         [HttpGet("swagger.json")]
         public ActionResult<string> GetOpenApiDocument()
@@ -63,16 +36,9 @@ namespace SW.CqApi
             return Ok(sd.GetOpenApiDocument());
         }
 
-        //[HttpGet("{resourceName}/_filter")]
-        //public async Task<IActionResult> GetFilterConfigs(string resourceName)
-        //{
-        //    var mapiService = serviceProvider.ResolveService(resourceName, "get/key");
-
-        //    return Ok(await (dynamic)mapiService.Method.Invoke(mapiService.Instance, null));
-        //}
 
         [HttpGet("{resourceName}")]
-        public async Task<IActionResult> Search(
+        public Task<IActionResult> Get(
             string resourceName,
             [FromQuery(Name = "filter")] string[] filters,
             [FromQuery(Name = "sort")] string[] sorts,
@@ -82,111 +48,144 @@ namespace SW.CqApi
             [FromQuery(Name = "search")] string searchPhrase,
             [FromQuery(Name = "lookup")] bool lookup)
         {
-            var handlerInfo = serviceProvider.ResolveHandler(resourceName, "get");
-
+            var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "get");
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
+            return ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, null);
 
-            var result = await (dynamic)handlerInfo.Method.Invoke(handlerInfo.Instance, new object[] { searchyRequest, lookup, searchPhrase });
-
-            return Ok(result);
         }
 
-        [HttpGet("{resourceName}/{key}")]
-        public async Task<IActionResult> Get(string resourceName, string key, [FromQuery(Name = "lookup")] bool lookup)
+        [HttpGet("{resourceName}/{token}")]
+        public async Task<IActionResult> GetWithToken(string resourceName, string token, [FromQuery(Name = "lookup")] bool lookup)
         {
-            var handlerInfo = serviceProvider.ResolveHandler(resourceName, "get/key");
 
-            var param = Object.ConvertValue(key, handlerInfo.ArgumentTypes.First());
+            if (serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
 
-            var result = await (dynamic)handlerInfo.Method.Invoke(handlerInfo.Instance, new object[] { param, lookup });
+                return await ExecuteHandler(handlerInfo, null, false, null, null, null);
 
-            if (result == null) return NotFound(key);
+            else if (serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
 
-            return Ok(result);
+                return await ExecuteHandler(handlerInfo, null, false, null, token, null);
+
+            else
+                return NotFound();
+
         }
 
         [HttpPost("{resourceName}")]
         public async Task<IActionResult> Post(string resourceName, [FromBody]object body)
         {
-            var handlerInfo = serviceProvider.ResolveHandler(resourceName, "post");
-
-            var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes.First());
-
-            if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
-
-            var result = await (dynamic)handlerInfo.Method.Invoke(handlerInfo.Instance, new object[] { typedParam });
-
-            if (result == null) return NoContent();
-
-            return Ok(result);
+            var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "post");
+            return await ExecuteHandler(handlerInfo, null, false, null, null, body);
             //return Created(new Uri(new Uri($"{Request.Scheme}://{Request.Host}{Request.PathBase}"), $"/mapi/{resourceName}/{key}"), null);
             //new Uri($"{Request.Scheme}://{Request.Host}{Request.PathBase}"),
         }
 
-        [HttpPut("{resourceName}/{key}")]
-        public async Task<IActionResult> Put(string resourceName, string key, [FromBody]object body)
+        [HttpPost("{resourceName}/{token}")]
+        public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody]object body)
         {
 
-            var handlerInfo = serviceProvider.ResolveHandler(resourceName, "put/key");
+            if (serviceDiscovery.TryResolveHandler(resourceName, $"post/{token}", out var handlerInfo))
 
-            var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
-            var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
+                return await ExecuteHandler(handlerInfo, null, false, null, null, body);
 
-            if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
 
-            var result = await (dynamic)handlerInfo.Method.Invoke(handlerInfo.Instance, new object[] { keyParam, typedParam });
+            else if (serviceDiscovery.TryResolveHandler(resourceName, "post/key", out handlerInfo))
 
-            if (result == null) return NoContent();
+                return await ExecuteHandler(handlerInfo, null, false, null, token, body);
 
-            return result;
+            else
+                return NotFound();
+
         }
 
         [HttpPost("{resourceName}/{key}/{command}")]
-        public async Task<IActionResult> PostWithKey(string resourceName, string key, string command, [FromBody]object body)
+        public async Task<IActionResult> PostWithKeyAndCommandName(string resourceName, string key, string command, [FromBody]object body)
         {
-
-            var handlerInfo = serviceProvider.ResolveHandler(resourceName, $"post/key/{command}");
-
-            var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
-            var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
-
-            if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
-
-            var result = await (dynamic)handlerInfo.Method.Invoke(handlerInfo.Instance, new object[] { keyParam, typedParam });
-
-            if (result == null) return NoContent();
-
-            return result;
+            var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, $"post/key/{command}");
+            return await ExecuteHandler(handlerInfo, null, false, null, key, body);
         }
 
         [HttpDelete("{resourceName}/{key}")]
         public async Task<IActionResult> Delete(string resourceName, string key)
         {
-            var mapiService = serviceProvider.ResolveHandler(resourceName, "delete/key");
-
-            await (dynamic)mapiService.Method.Invoke(mapiService.Instance, new object[] { key });
-
-            return NoContent();
+            var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "delete/key");
+            return await ExecuteHandler(handlerInfo, null, false, null, key, null);
         }
 
         async Task<bool> ValidateInput(object input)
         {
             var tvalidator = typeof(IValidator<>).MakeGenericType(input.GetType());
-            var validator = serviceProvider.GetService(tvalidator) as IValidator;
 
-            if (validator == null) return true;
+            if (!(serviceProvider.GetService(tvalidator) is IValidator validator)) return true;
 
             var validationResult = await validator.ValidateAsync(input);
 
             if (validationResult.IsValid) return true;
 
             foreach (var error in validationResult.Errors)
-
                 ModelState.AddModelError("InputValidation", error.ErrorMessage);
 
-
             return false;
+        }
 
+        async Task<IActionResult> ExecuteHandler(HandlerInfo handlerInfo, SearchyRequest searchyRequest, bool lookup, string searchPhrase, string key, object body)
+        {
+            var handlerInstance = serviceProvider.GetHandlerInstance(handlerInfo);
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(ISearchyHandler))
+            {
+                var result = await handlerInstance.Invoke(searchyRequest, lookup, searchPhrase);
+                return Ok(result);
+
+            }
+            else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler))
+            {
+                var result = await handlerInstance.Invoke();
+                return Ok(result);
+            }
+            else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
+            {
+                throw new NotImplementedException(); 
+            }
+            else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
+            {
+                var result = await handlerInstance.Invoke();
+                return Ok(result);
+            }
+            else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<>))
+            {
+                var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[0]);
+                if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
+                var result = await handlerInstance.Invoke(typedParam);
+                if (result == null) return NoContent();
+                return Ok(result);
+            }
+            else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<,>))
+            {
+                var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
+                if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
+                var result = await handlerInstance.Invoke(keyParam, typedParam);
+                if (result == null) return NoContent();
+                return Ok(result);
+            }
+            else if (handlerInfo.NormalizedInterfaceType == typeof(IGetHandler<>))
+            {
+                var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                var result = await handlerInstance.Invoke(keyParam);
+                if (result == null) return NotFound();
+                return Ok(result);
+            }
+            else if (handlerInfo.NormalizedInterfaceType == typeof(IDeleteHandler<>))
+            {
+                var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                var result = await handlerInstance.Invoke(keyParam);
+                return Accepted();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         T GetFromQueryString<T>() where T : new()

@@ -16,21 +16,17 @@ namespace SW.CqApi
             return serviceProvider.GetServices<IRequestContext>().Where(rc => rc.IsValid).SingleOrDefault();
         }
 
-        public static HandlerInfo ResolveHandler(this IServiceProvider serviceProvider, string resourceName, string handlerKey)
+        public static HandlerInstance GetHandlerInstance(this IServiceProvider serviceProvider, HandlerInfo handlerInfo)
         {
-            var sd = serviceProvider.GetService<ServiceDiscovery>();
+            var handlerInstance = new HandlerInstance
+            {
+                Method = handlerInfo.Method,
+                Instance = serviceProvider.GetService(handlerInfo.HandlerType)
+            };
 
-            if (sd is null)
-
-                throw new SWException("Could not find required service. services.AddMapi() seems missing from startup.");
-
-            var handlerInfo = sd.ResolveHandler(resourceName, handlerKey);
-
-            handlerInfo.Instance = serviceProvider.GetService(handlerInfo.HandlerType);
-
-            if (handlerInfo.Instance is null) 
+            if (handlerInstance.Instance is null) 
                 
-                throw new SWException($"Could not find required service {handlerKey} for resource {resourceName}.");
+                throw new SWException($"Could not find required service {handlerInfo.Key} for resource {handlerInfo.Resource}.");
 
             if (handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>() is ProtectAttribute protectAttribute)
             {
@@ -48,8 +44,8 @@ namespace SW.CqApi
                 {
                     var requiredRoles = new string[] 
                     { 
-                        $"{resourceName}.{handlerInfo.HandlerType.Name}", 
-                        $"{resourceName}.*" 
+                        $"{handlerInfo.Resource}.{handlerInfo.HandlerType.Name}", 
+                        $"{handlerInfo.Resource}.*" 
                     };
 
                     if (!requestContext.User.Claims.Any(c => c.Subject.RoleClaimType  == ClaimTypes.Role && requiredRoles.Contains(c.Value, StringComparer.OrdinalIgnoreCase)))
@@ -58,7 +54,7 @@ namespace SW.CqApi
                 }
             }
 
-            return handlerInfo;
+            return handlerInstance;
 
         }
 

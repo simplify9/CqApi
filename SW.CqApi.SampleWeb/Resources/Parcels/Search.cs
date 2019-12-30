@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
-    public class Search : ISearchHandler
+
+    public class Search : ISearchyHandler
     {
         private readonly IRequestContext requestContext;
 

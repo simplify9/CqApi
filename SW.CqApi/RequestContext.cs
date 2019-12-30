@@ -37,6 +37,7 @@ namespace SW.CqApi
                 var token = tokenHandler.ReadJwtToken(rawToken.First());
 
                 var claimsIdentity = new ClaimsIdentity(token.Claims, "jwt");
+  
                 return new ClaimsPrincipal(claimsIdentity);
             }
         }

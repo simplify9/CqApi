@@ -31,6 +31,8 @@ namespace SW.CqApi
          */
 
 
+
+
         private readonly ILogger<ServiceDiscovery> logger;
         private readonly IDictionary<string, IDictionary<string, HandlerInfo>> resourceHandlers = new Dictionary<string, IDictionary<string, HandlerInfo>>(StringComparer.OrdinalIgnoreCase);
 
@@ -44,93 +46,53 @@ namespace SW.CqApi
                 {
                     var serviceType = svc.GetType();
                     var interfaceType = serviceType.GetTypeInfo().ImplementedInterfaces.Where(i => typeof(IHandler).IsAssignableFrom(i) && i != typeof(IHandler)).Single();
+                    var interfaceTypeNormalized = interfaceType.IsGenericType ? interfaceType.GetGenericTypeDefinition() : interfaceType;
 
                     var typeNameArray = serviceType.FullName.Split('.');
                     var resourceName = typeNameArray[typeNameArray.Length - 2].ToLower();
 
+                    var handlerNameAttribute = serviceType.GetCustomAttribute<HandlerNameAttribute>();
+                    var handlerName = handlerNameAttribute == null ? "" : $"/{handlerNameAttribute.Name.ToLower()}";
+
                     if (!resourceHandlers.ContainsKey(resourceName))
                         resourceHandlers.Add(resourceName, new Dictionary<string, HandlerInfo>(StringComparer.OrdinalIgnoreCase));
 
-                    if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IGetHandler<>))
+                    var handlerKey = $"{HandlerTypeMetadata.Handlers[interfaceTypeNormalized].Key}{handlerName}";
 
-                        resourceHandlers[resourceName]["get/key"] = new HandlerInfo
-                        {
-                            HandlerType = serviceType,
-                            Method = interfaceType.GetMethod("Handle"),
-                            ArgumentTypes = interfaceType.GetMethod("Handle").GetParameters().Select(p => p.ParameterType).ToList()
-                        };
-
-                    if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(ICommandHandler<>))
+                    resourceHandlers[resourceName][handlerKey] = new HandlerInfo
                     {
-                        var handlerNameAttribute = serviceType.GetCustomAttribute<HandlerNameAttribute>();
-                        var handlerKey = handlerNameAttribute == null ? "post" : $"post/{handlerNameAttribute.Name.ToLower()}";
-                        resourceHandlers[resourceName][handlerKey] = new HandlerInfo
-                        {
-                            HandlerType = serviceType,
-                            Method = interfaceType.GetMethod("Handle"),
-                            ArgumentTypes = interfaceType.GetMethod("Handle").GetParameters().Select(p => p.ParameterType).ToList()
-                        };
-                    }
-
-                    if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(ICommandHandler<,>))
-                    {
-                        var handlerNameAttribute = serviceType.GetCustomAttribute<HandlerNameAttribute>();
-                        var handlerKey = handlerNameAttribute == null ? "put/key" : $"post/key/{handlerNameAttribute.Name.ToLower()}";
-                        resourceHandlers[resourceName][handlerKey] = new HandlerInfo
-                        {
-                            HandlerType = serviceType,
-                            Method = interfaceType.GetMethod("Handle"),
-                            ArgumentTypes = interfaceType.GetMethod("Handle").GetParameters().Select(p => p.ParameterType).ToList()
-                        };
-                    }
-
-                    if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IDeleteHandler<>))
-                    {
-
-                        resourceHandlers[resourceName]["delete/key"] = new HandlerInfo
-                        {
-                            HandlerType = serviceType,
-                            Method = interfaceType.GetMethod("Handle"),
-                            ArgumentTypes = interfaceType.GetMethod("Handle").GetParameters().Select(p => p.ParameterType).ToList()
-                        };
-                    }
-
-                    if (interfaceType == typeof(ISearchHandler))
-
-                        resourceHandlers[resourceName]["get"] = new HandlerInfo
-                        {
-                            HandlerType = serviceType,
-                            Method = interfaceType.GetMethod("Handle"),
-                            ArgumentTypes = interfaceType.GetMethod("Handle").GetParameters().Select(p => p.ParameterType).ToList()
-                        };
-
+                        HandlerType = serviceType,
+                        Method = interfaceType.GetMethod("Handle"),
+                        ArgumentTypes = interfaceType.GetMethod("Handle").GetParameters().Select(p => p.ParameterType).ToList(),
+                        Key = handlerKey,
+                        Resource = resourceName,
+                        NormalizedInterfaceType = interfaceTypeNormalized
+                    };
 
                 }
             }
         }
 
+        public bool TryResolveHandler(string resourceName, string handlerKey, out HandlerInfo handlerInfo)
+        {
+            if (resourceHandlers.TryGetValue(resourceName, out var handlers))
 
-        //public Type GetModelType(string modelName)
-        //{
-        //    return models[modelName];
-        //}
+                if (handlers.TryGetValue(handlerKey, out handlerInfo))
+                    return true;
 
+            handlerInfo = null;
+            return false;
 
-        //public IDictionary<string, IEnumerable<string>> ListModels()
-        //{
-        //    return modelServices.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(t => t.Name));
-        //}
+        }
 
         public HandlerInfo ResolveHandler(string resourceName, string handlerKey)
         {
-            try
-            {
-                return resourceHandlers[resourceName][handlerKey];
-            }
-            catch
-            {
-                throw new SWException($"Could not resolve {handlerKey} of resource {resourceName}.");
-            }
+
+            if (TryResolveHandler(resourceName, handlerKey, out var handlerInfo))
+                return handlerInfo;
+
+            throw new SWException($"Could not resolve {handlerKey} of resource {resourceName}.");
+
         }
 
         public string GetOpenApiDocument()
@@ -147,7 +109,7 @@ namespace SW.CqApi
                     new OpenApiServer { Url = "http://petstore.swagger.io/api" }
                 },
                 Paths = new OpenApiPaths(),
-                
+
 
             };
 
@@ -155,7 +117,7 @@ namespace SW.CqApi
             foreach (var res in resourceHandlers)
             {
                 var pathItem = new OpenApiPathItem();
-                
+
                 document.Paths.Add(res.Key, pathItem);
                 pathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
                 foreach (var handler in res.Value)
@@ -228,11 +190,11 @@ namespace SW.CqApi
                             {
                                 Required = true,
                                 Description = "Command body",
-                                Reference  = new OpenApiReference
+                                Reference = new OpenApiReference
                                 {
                                     Type = ReferenceType.RequestBody,
-                                    
-                                } 
+
+                                }
                             },
                             Description = "Returns all pets from the system that the user has access to",
                             Responses = new OpenApiResponses
@@ -246,12 +208,12 @@ namespace SW.CqApi
                         });
                     }
 
-                    else if (handler.Key == "put/key")
+                    else if (handler.Key == "post/key")
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
 
-                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Put, new OpenApiOperation
+                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, new OpenApiOperation
                         {
 
 
