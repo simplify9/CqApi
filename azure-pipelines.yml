@@ -36,7 +36,7 @@ steps:
   displayName: 'dotnet pack'
   inputs:
     command: pack
-    packagesToPack: 'SW.CqApi/SW.CqApi.csproj;'
+    packagesToPack: 'SW.CqApi/SW.CqApi.csproj;SW.CqApi.Client/SW.CqApi.Client.csproj;'
     nobuild: true
     versioningScheme: byBuildNumber
 
