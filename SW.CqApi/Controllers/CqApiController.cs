@@ -88,7 +88,6 @@ namespace SW.CqApi
 
                 return await ExecuteHandler(handlerInfo, null, false, null, null, body);
 
-
             else if (serviceDiscovery.TryResolveHandler(resourceName, "post/key", out handlerInfo))
 
                 return await ExecuteHandler(handlerInfo, null, false, null, token, body);
