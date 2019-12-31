@@ -10,6 +10,14 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk 3.1.100'
+  inputs:
+    packageType: sdk
+    version: 3.1.100
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
 - task: DotNetCoreCLI@2
   displayName: Restore
   inputs:
@@ -18,13 +26,11 @@ steps:
     feedsToUse: 'select'
     vstsFeed: 'e5fb2e9c-1207-48a4-8f7b-2e6b32308210'
 
-
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
     projects: '**/*.csproj'
     arguments: '--configuration $(BuildConfiguration)'
-
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test'
