@@ -124,36 +124,8 @@ namespace SW.CqApi
                 {
                     if (handler.Key == "get")
                     {
-
                         initializePath(document, res.Key);
-
-                        document.Paths[res.Key].Operations.Add(OperationType.Get, new OpenApiOperation
-                        {
-                            Parameters = new List<OpenApiParameter>
-                            {
-                                new OpenApiParameter
-                                {
-                                    Name = "size",
-                                    AllowEmptyValue = true,
-                                    In = ParameterLocation.Query,
-
-                                    Schema = new OpenApiSchema
-                                    {
-                                        Type = "integer",
-                                    }
-                                }
-                            },
-
-                            Description = "Returns all pets from the system that the user has access to",
-                            Responses = new OpenApiResponses
-                            {
-                                ["200"] = new OpenApiResponse
-                                {
-                                    Description = "OK",
-
-                                }
-                            }
-                        });
+                        document.Paths[res.Key].Operations.Add(OperationType.Get, HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation);
                     }
 
                     else if (handler.Key == "get/key")

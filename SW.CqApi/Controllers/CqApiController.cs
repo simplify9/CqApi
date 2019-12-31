@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SW.PrimitiveTypes;
 using Newtonsoft.Json;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SW.CqApi
 {
@@ -16,6 +17,8 @@ namespace SW.CqApi
     [CqApiExceptionFilter]
     [Route("cqapi")]
     [ApiController]
+    [Authorize(AuthenticationSchemes ="Bearer") ]
+    [AllowAnonymous]
     public class CqApiController : ControllerBase
     {
         private readonly IServiceProvider serviceProvider;

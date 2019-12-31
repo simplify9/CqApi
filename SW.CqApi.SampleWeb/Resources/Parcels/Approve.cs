@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
     [HandlerName("approve") ]
-    
     class Approve : ICommandHandler<int, ApproveCarCommand> 
     {
         private readonly IRequestContext requestContext;

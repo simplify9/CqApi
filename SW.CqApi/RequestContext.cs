@@ -3,7 +3,7 @@ using Microsoft.Extensions.Primitives;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
+
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -30,15 +30,15 @@ namespace SW.CqApi
                 if (httpContext == null)
                     return null;
 
-                if (!httpContext.Request.Headers.TryGetValue("request-user-token", out var rawToken) || string.IsNullOrEmpty(rawToken.First()))
+                //if (!httpContext.Request.Headers.TryGetValue("request-user-token", out var rawToken) || string.IsNullOrEmpty(rawToken.First()))
                     return httpContext.User;
 
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var token = tokenHandler.ReadJwtToken(rawToken.First());
+                //var tokenHandler = new JwtSecurityTokenHandler();
+                //var token = tokenHandler.ReadJwtToken(rawToken.First());
 
-                var claimsIdentity = new ClaimsIdentity(token.Claims, "jwt");
+                //var claimsIdentity = new ClaimsIdentity(token.Claims, "jwt");
   
-                return new ClaimsPrincipal(claimsIdentity);
+                //return new ClaimsPrincipal(claimsIdentity);
             }
         }
 

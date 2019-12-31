@@ -10,6 +10,13 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
     [HandlerName("ScanIncoming")]
     public class ScanIncoming : ICommandHandler<ScanIncomingCommand>
     {
+        private readonly IRequestContext requestContext;
+
+        public ScanIncoming(IRequestContext requestContext)
+        {
+            this.requestContext = requestContext;
+        }
+
         async public Task<object> Handle(ScanIncomingCommand request)
         {
             return null;

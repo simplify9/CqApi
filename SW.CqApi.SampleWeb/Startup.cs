@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -11,9 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
-
-
+using Microsoft.IdentityModel.Tokens;
 
 namespace SW.CqApi.SampleWeb
 {
@@ -29,22 +29,37 @@ namespace SW.CqApi.SampleWeb
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddJsonOptions(config => 
+            services.AddControllers().AddJsonOptions(config =>
             {
                 config.JsonSerializerOptions.PropertyNamingPolicy = null;
-            }) ;
+            });
             //services.AddI18n();
-            services.AddCqApi(typeof(Startup).Assembly  );
+            services.AddCqApi(typeof(Startup).Assembly);
             //services.AddMapiCallContext(); 
             services.AddRazorPages();
             ;
-            
+
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).
-                AddCookie(options => 
+                AddCookie(options =>
                 {
                     options.LoginPath = "/login";
                     options.AccessDeniedPath = "/";
+                }).
+                AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidIssuer = "cqapi",
+                        ValidAudience = "cqapi",
+
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("6547647654764764767657658658758765876532542"))
+                    };
+
                 });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,28 +71,20 @@ namespace SW.CqApi.SampleWeb
             }
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
-            
-
             app.UseAuthentication();
             app.UseAuthorization();
 
-            //app.UseStaticFiles();
-
             app.UseSwaggerUI(c =>
             {
-
-
-                 c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
             });
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-                 
+
             });
         }
     }

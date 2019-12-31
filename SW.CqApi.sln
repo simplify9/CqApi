@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SW.CqApi.SampleModel", "SW.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SW.CqApi.SampleWeb", "SW.CqApi.SampleWeb\SW.CqApi.SampleWeb.csproj", "{4EB1F302-65F3-4A7E-AE21-69A22DA5C5D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SW.CqApi.Client", "SW.CqApi.Client\SW.CqApi.Client.csproj", "{8A7DCC02-A542-49B3-A0B8-2C492656621D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SW.CqApi.Client", "SW.CqApi.Client\SW.CqApi.Client.csproj", "{8A7DCC02-A542-49B3-A0B8-2C492656621D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SW.CqApi.UnitTests", "SW.CqApi.UnitTests\SW.CqApi.UnitTests.csproj", "{D5D41333-7941-4290-B05F-71B84B295083}"
 EndProject
