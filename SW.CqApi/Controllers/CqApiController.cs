@@ -67,7 +67,7 @@ namespace SW.CqApi
 
             else if (serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
 
-                return await ExecuteHandler(handlerInfo, null, false, null, token, null);
+                return await ExecuteHandler(handlerInfo, null, lookup, null, token, null);
 
             else
                 return NotFound();
@@ -174,7 +174,7 @@ namespace SW.CqApi
             else if (handlerInfo.NormalizedInterfaceType == typeof(IGetHandler<>))
             {
                 var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
-                var result = await handlerInstance.Invoke(keyParam);
+                var result = await handlerInstance.Invoke(keyParam, lookup);
                 if (result == null) return NotFound();
                 return Ok(result);
             }
