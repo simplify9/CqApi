@@ -125,7 +125,7 @@ namespace SW.CqApi
             if (validationResult.IsValid) return true;
 
             foreach (var error in validationResult.Errors)
-                ModelState.AddModelError("InputValidation", error.ErrorMessage);
+                ModelState.AddModelError($"Field.{error.PropertyName}", error.ErrorMessage);
 
             return false;
         }

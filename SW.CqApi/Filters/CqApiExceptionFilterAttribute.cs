@@ -25,7 +25,7 @@ namespace SW.CqApi
 
             else if (context.Exception is SWException)
             {
-                context.ModelState.AddModelError(context.Exception.GetType().FullName, context.Exception.Message);
+                context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
                 context.Result = new BadRequestObjectResult(context.ModelState);
             }
 

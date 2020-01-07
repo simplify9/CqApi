@@ -8,34 +8,38 @@ using System.Threading.Tasks;
 
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
-    [HandlerName("approve") ]
-    class Approve : ICommandHandler<int, ApproveCarCommand> 
+    [HandlerName("approve")]
+    class Approve : ICommandHandler<int, ApproveCarCommand>
     {
         private readonly IRequestContext requestContext;
 
-        public Approve(IRequestContext requestContext )
+        public Approve(IRequestContext requestContext)
         {
             this.requestContext = requestContext;
         }
 
         async public Task<object> Handle(int key, ApproveCarCommand request)
         {
-            return null;
+            throw new SWException("Invalid data.");
+            //return null;
+        }
+
+        private class Validator : AbstractValidator<ApproveCarCommand>
+        {
+            public Validator()
+            {
+                RuleFor(p => p.Notes).NotEmpty();
+            }
         }
     }
 
     class ApproveCarCommand
     {
         public int ApprovalNumber { get; set; }
+        public string Notes { get; set; }
     }
 
-    class Validator : AbstractValidator<ApproveCarCommand>
-    {
-        public Validator()
-        {
-            RuleFor(p => p.ApprovalNumber).NotEmpty();
-        }
-    }
+
 
 
 
