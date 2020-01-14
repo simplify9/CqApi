@@ -21,7 +21,7 @@ namespace SW.CqApi
 
             else if (context.Exception is CqApiForbidException)
 
-                context.Result = new ForbidResult(context.HttpContext.User.Identity.AuthenticationType  );
+                context.Result = new ForbidResult();
 
             else if (context.Exception is SWException)
             {

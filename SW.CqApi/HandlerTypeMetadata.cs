@@ -14,6 +14,7 @@ namespace SW.CqApi
             {
                 typeof(ICommandHandler), new HandlerTypeMetadata
                 {
+
                     Key = "post",
                     OpenApiOperation = new OpenApiOperation
                     {

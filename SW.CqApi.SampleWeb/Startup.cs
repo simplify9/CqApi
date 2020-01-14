@@ -78,6 +78,7 @@ namespace SW.CqApi.SampleWeb
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
+               
             });
 
             app.UseEndpoints(endpoints =>

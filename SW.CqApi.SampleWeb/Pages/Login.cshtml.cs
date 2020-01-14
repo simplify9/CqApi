@@ -32,6 +32,8 @@ namespace SW.ModelApi.SampleWeb.Pages
                 new Claim("FullName", "blabla"),
                 new Claim(ClaimTypes.Role, "Administrator"),
                 new Claim(ClaimTypes.Role, "Supervisor"),
+                new Claim(ClaimTypes.Role, "Parcels.Approve"),
+
             };
 
             var claimsIdentity = new ClaimsIdentity(

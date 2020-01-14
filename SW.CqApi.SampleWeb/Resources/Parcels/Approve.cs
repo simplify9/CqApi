@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
+
+
     [HandlerName("approve")]
+    [Protect(RequireRole=true)]
+
     class Approve : ICommandHandler<int, ApproveCarCommand>
     {
         private readonly IRequestContext requestContext;
@@ -20,9 +24,13 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
 
         async public Task<object> Handle(int key, ApproveCarCommand request)
         {
+
+
             throw new SWException("Invalid data.");
             //return null;
         }
+
+
 
         private class Validator : AbstractValidator<ApproveCarCommand>
         {
@@ -33,13 +41,13 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
         }
     }
 
-    class ApproveCarCommand
+
+
+    public class ApproveCarCommand
     {
         public int ApprovalNumber { get; set; }
         public string Notes { get; set; }
     }
-
-
 
 
 

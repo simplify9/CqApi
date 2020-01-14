@@ -184,21 +184,9 @@ namespace SW.CqApi
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
+                        var openApiOp = HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation;
 
-                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, new OpenApiOperation
-                        {
-
-
-                            Description = "Returns all pets from the system that the user has access to",
-                            Responses = new OpenApiResponses
-                            {
-                                ["200"] = new OpenApiResponse
-                                {
-                                    Description = "OK",
-
-                                }
-                            }
-                        });
+                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, openApiOp);
                     }
 
                     else if (handler.Key.StartsWith("post/key"))
@@ -210,7 +198,10 @@ namespace SW.CqApi
                         document.Paths[path].Operations.Add(OperationType.Post, new OpenApiOperation
                         {
 
-
+                            RequestBody = new OpenApiRequestBody
+                            {
+                                
+                            },
                             Description = "Returns all pets from the system that the user has access to",
                             Responses = new OpenApiResponses
                             {
