@@ -13,7 +13,7 @@ namespace SW.CqApi.SampleModel
     {
         [Required]
         public string PlateNumber { get; set; }
-        public string Owner { get; set; }
+        public string Owner { get; set; } = "RandomOwner";
         public string Brand { get; set; }
         public CarOwner CarOwner { get; set; }
     }

@@ -99,7 +99,7 @@ namespace SW.CqApi
         }
 
 
-        private IList<OpenApiParameter> GetOpenApiParameters(IList<ParameterInfo> parameters, bool withKey = false)
+        private IList<OpenApiParameter> GetOpenApiParameters(IList<ParameterInfo> parameters, OpenApiComponents components, bool withKey = false)
         {
             var openApiParams = new List<OpenApiParameter>();
             foreach(var parameter in parameters)
@@ -118,25 +118,61 @@ namespace SW.CqApi
             return openApiParams;
         }
 
-        private object ExplodeParameter (Type parameter)
+        private OpenApiSchema ExplodeParameter (Type parameter, OpenApiComponents components)
         {
-            if (parameter.IsPrimitive || parameter == typeof(string))
-                return parameter.Name;
-
-
+            int randomNum = new Random().Next() % 3;
+            if (parameter == typeof(string))
+            {
+                var words = new string[] { "foo", "bar", "baz" };
+                return new OpenApiSchema
+                {
+                    Type = parameter.Name,
+                    Example = new OpenApiString(words[randomNum])
+                };
+            }
+            else if (parameter == typeof(int) || parameter.IsAssignableFrom(typeof(int)))
+            {
+                return new OpenApiSchema
+                {
+                    Type = parameter.Name,
+                    Example = new OpenApiInteger(randomNum)
+                };
+            }
+            else if (parameter.IsPrimitive)
+            {
+                return new OpenApiSchema
+                {
+                    Type = parameter.Name
+                };
+            }
             else
             {
-                var paramDict = new Dictionary<string, object>();
-                var props = parameter.GetProperties();
-                foreach (var prop in props)
+
+                if (components.Schemas.ContainsKey(parameter.Name))
                 {
-                    paramDict[prop.Name] = ExplodeParameter(prop.PropertyType);
+                    return components.Schemas[parameter.Name];
                 }
-                return paramDict;
+                else
+                {
+                    var paramSchemeDict = new Dictionary<string, OpenApiSchema>();
+                    var props = parameter.GetProperties();
+                    foreach (var prop in props)
+                    {
+                        paramSchemeDict[prop.Name] = ExplodeParameter(prop.PropertyType, components);
+                    }
+                    var schema = new OpenApiSchema
+                    {
+                        Title = parameter.Name,
+                        Properties = paramSchemeDict
+                    };
+                    components.Schemas[parameter.Name] = schema;
+                    return schema;
+                }
+
             }
         }
 
-        private OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo)
+        private OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo, OpenApiComponents components)
         {
 
             var conentMediaType  = new OpenApiMediaType
@@ -147,11 +183,11 @@ namespace SW.CqApi
                         methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName 
                 }
             };
-            var paramterDict = new Dictionary<string, object>();
+            var paramterDict = new Dictionary<string, OpenApiSchema>();
 
             foreach(var param in methodInfo.GetParameters())
             {
-                paramterDict[param.Name] = ExplodeParameter(param.ParameterType);
+                paramterDict[param.Name] = ExplodeParameter(param.ParameterType, components);
             }
             
 
@@ -166,7 +202,8 @@ namespace SW.CqApi
                     {
                         Schema = new OpenApiSchema
                         {
-                            Example = new OpenApiString(Newtonsoft.Json.JsonConvert.SerializeObject(paramterDict))
+                            Title = "Body",
+                            Properties = paramterDict,
                         }
                     }
                 },
@@ -185,7 +222,7 @@ namespace SW.CqApi
             {
                 Schema = new OpenApiSchema
                 {
-                    Type = methodInfo.ReturnType.FullName.Contains("Task") ? methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName 
+                    Type = methodInfo.ReturnType.FullName.Contains("Task") ? methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName ,
                 }
             };
 
@@ -196,7 +233,8 @@ namespace SW.CqApi
                     Description = "OK",
                     Content = {
                         ["application/json"] = returnMediaType
-                    }
+                    },
+                    
 
                 }
             };
@@ -207,6 +245,9 @@ namespace SW.CqApi
 
         public string GetOpenApiDocument()
         {
+
+            var components = new OpenApiComponents();
+
             var document = new OpenApiDocument
             {
                 Info = new OpenApiInfo
@@ -219,7 +260,7 @@ namespace SW.CqApi
                     new OpenApiServer { Url = "http://petstore.swagger.io/api" }
                 },
                 Paths = new OpenApiPaths(),
-
+                Components = components
 
             };
 
@@ -236,7 +277,7 @@ namespace SW.CqApi
                     if (handler.Key == "get")
                     {
                         initializePath(document, res.Key);
-                        baseApiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters());
+                        baseApiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), components);
                         baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[res.Key].Operations.Add(OperationType.Get, baseApiOperation);
                     }
@@ -245,7 +286,7 @@ namespace SW.CqApi
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
-                        baseApiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), true);
+                        baseApiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
                         baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, baseApiOperation);
                     }
@@ -254,7 +295,7 @@ namespace SW.CqApi
                     {
 
                         initializePath(document, res.Key);
-                        baseApiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method);
+                        baseApiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components);
                         baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[res.Key].Operations.Add(OperationType.Post, baseApiOperation);
                     }
@@ -264,33 +305,16 @@ namespace SW.CqApi
 
                         initializePath(document, $"{res.Key}/{{key}}");
                         var openApiOp = HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation;
-
+                        baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, openApiOp);
                     }
 
                     else if (handler.Key.StartsWith("post/key"))
                     {
                         var path = $"{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
-
                         initializePath(document, path);
-
-                        document.Paths[path].Operations.Add(OperationType.Post, new OpenApiOperation
-                        {
-
-                            RequestBody = new OpenApiRequestBody
-                            {
-                                
-                            },
-                            Description = "Returns all pets from the system that the user has access to",
-                            Responses = new OpenApiResponses
-                            {
-                                ["200"] = new OpenApiResponse
-                                {
-                                    Description = "OK",
-
-                                }
-                            }
-                        });
+                        baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        document.Paths[path].Operations.Add(OperationType.Post, baseApiOperation);
                     }
 
 
@@ -301,24 +325,7 @@ namespace SW.CqApi
 
                         initializePath(document, path);
 
-                        document.Paths[path].Operations.Add(OperationType.Post, new OpenApiOperation
-                        {
-
-                            RequestBody = new OpenApiRequestBody
-                            {
-                                Description = "Command",
-                                Required = true
-                            },
-                            Description = "Returns all pets from the system that the user has access to",
-                            Responses = new OpenApiResponses
-                            {
-                                ["200"] = new OpenApiResponse
-                                {
-                                    Description = "OK",
-
-                                }
-                            }
-                        });
+                        document.Paths[path].Operations.Add(OperationType.Post, baseApiOperation);
                     }
 
 
