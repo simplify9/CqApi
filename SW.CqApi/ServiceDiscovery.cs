@@ -8,7 +8,6 @@ using Microsoft.OpenApi.Writers;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -147,11 +146,9 @@ namespace SW.CqApi
             }
             else
             {
-
                 if (components.Schemas.ContainsKey(parameter.Name))
-                {
+                    //TODO: Reference instead of copy
                     return components.Schemas[parameter.Name];
-                }
                 else
                 {
                     var paramSchemeDict = new Dictionary<string, OpenApiSchema>();
@@ -190,8 +187,6 @@ namespace SW.CqApi
                 paramterDict[param.Name] = ExplodeParameter(param.ParameterType, components);
             }
             
-
-
             var requestBody = new OpenApiRequestBody
             {
                 Description = "Command Body",
@@ -253,7 +248,7 @@ namespace SW.CqApi
                 Info = new OpenApiInfo
                 {
                     Version = "1.0.0",
-                    Title = "Swagger Petstore (Simple)",
+                    Title = "Open API Document",
                 },
                 Servers = new List<OpenApiServer>
                 {
@@ -268,45 +263,64 @@ namespace SW.CqApi
             foreach (var res in resourceHandlers)
             {
                 var pathItem = new OpenApiPathItem();
-
                 document.Paths.Add(res.Key, pathItem);
+                var tag = new OpenApiTag {
+                    Name = res.Key,
+                    Description = $"Commands and Queries related to {res.Key}"
+                };
+                document.Tags.Add(tag);
                 pathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
                 foreach (var handler in res.Value)
                 {
                     var baseApiOperation = HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation;
+                    var apiOperation = new OpenApiOperation()
+                    {
+                        Deprecated = baseApiOperation.Deprecated,
+                        Description = baseApiOperation.Description,
+                        Callbacks = baseApiOperation.Callbacks,
+                        Extensions = baseApiOperation.Extensions,
+                        Responses = baseApiOperation.Responses,
+                        RequestBody = baseApiOperation.RequestBody,
+                        OperationId = baseApiOperation.OperationId,
+                        ExternalDocs = baseApiOperation.ExternalDocs,
+                        Parameters = baseApiOperation.Parameters,
+                        Security = baseApiOperation.Security,
+                        Servers = baseApiOperation.Servers,
+                        Summary = baseApiOperation.Summary
+                    };
+                    apiOperation.Tags.Add(tag);
                     if (handler.Key == "get")
                     {
                         initializePath(document, res.Key);
-                        baseApiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), components);
-                        baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
-                        document.Paths[res.Key].Operations.Add(OperationType.Get, baseApiOperation);
+                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), components);
+                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        document.Paths[res.Key].Operations.Add(OperationType.Get, apiOperation);
                     }
 
                     else if (handler.Key == "get/key")
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
-                        baseApiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
-                        baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
-                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, baseApiOperation);
+                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
+                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, apiOperation);
                     }
 
                     else if (handler.Key == "post")
                     {
 
                         initializePath(document, res.Key);
-                        baseApiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components);
-                        baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
-                        document.Paths[res.Key].Operations.Add(OperationType.Post, baseApiOperation);
+                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components);
+                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        document.Paths[res.Key].Operations.Add(OperationType.Post, apiOperation);
                     }
 
                     else if (handler.Key == "post/key")
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
-                        var openApiOp = HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation;
-                        baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
-                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, openApiOp);
+                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, apiOperation);
                     }
 
                     else if (handler.Key.StartsWith("post/key"))
@@ -314,7 +328,7 @@ namespace SW.CqApi
                         var path = $"{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
                         baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
-                        document.Paths[path].Operations.Add(OperationType.Post, baseApiOperation);
+                        document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
 
@@ -325,7 +339,7 @@ namespace SW.CqApi
 
                         initializePath(document, path);
 
-                        document.Paths[path].Operations.Add(OperationType.Post, baseApiOperation);
+                        document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
 
