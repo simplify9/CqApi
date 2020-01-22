@@ -98,7 +98,7 @@ namespace SW.CqApi
         }
 
 
-        private IList<OpenApiParameter> GetOpenApiParameters(IList<ParameterInfo> parameters, OpenApiComponents components, bool withKey = false)
+        private IList<OpenApiParameter> GetOpenApiParameters(IEnumerable<ParameterInfo> parameters, OpenApiComponents components, bool withKey = false)
         {
             var openApiParams = new List<OpenApiParameter>();
             foreach(var parameter in parameters)
@@ -169,7 +169,7 @@ namespace SW.CqApi
             }
         }
 
-        private OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo, OpenApiComponents components)
+        private OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo, OpenApiComponents components, bool withKey = false)
         {
 
             var conentMediaType  = new OpenApiMediaType
@@ -180,9 +180,11 @@ namespace SW.CqApi
                         methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName 
                 }
             };
+            var relevantParameters = withKey ? methodInfo.GetParameters().Skip(1): methodInfo.GetParameters();
             var paramterDict = new Dictionary<string, OpenApiSchema>();
 
-            foreach(var param in methodInfo.GetParameters())
+
+            foreach(var param in relevantParameters)
             {
                 paramterDict[param.Name] = ExplodeParameter(param.ParameterType, components);
             }
@@ -190,7 +192,7 @@ namespace SW.CqApi
             var requestBody = new OpenApiRequestBody
             {
                 Description = "Command Body",
-                Required = methodInfo.GetParameters().Any(p => !p.IsOptional),
+                Required = relevantParameters.Any(p => !p.IsOptional),
                 Content =
                 {
                     ["application/json"] = new OpenApiMediaType
@@ -319,6 +321,8 @@ namespace SW.CqApi
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
+                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
+                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
                         apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, apiOperation);
                     }
@@ -327,7 +331,9 @@ namespace SW.CqApi
                     {
                         var path = $"{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
-                        baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
+                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
@@ -336,9 +342,9 @@ namespace SW.CqApi
                     {
 
                         var path = $"{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
-
                         initializePath(document, path);
-
+                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
