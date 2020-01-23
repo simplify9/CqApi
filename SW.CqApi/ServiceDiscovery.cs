@@ -162,11 +162,10 @@ namespace SW.CqApi
             else if (parameter.GetInterfaces().Contains(typeof(IEnumerable)))
             {
                 var exampleArr = new OpenApiArray();
-                int randomNum = new Random().Next() % 4;
-                for(int _ = 0; _ < randomNum; _++)
+                int randomNum = new Random().Next() % 3;
+                for(int _ = 0; _ < randomNum + 1; _++)
                 {
-                    var innerType = parameter.GetElementType() != null? 
-                                    parameter.GetElementType() : parameter.GenericTypeArguments[0];
+                    var innerType = parameter.GetElementType() ?? parameter.GenericTypeArguments[0];
                     exampleArr.Add(GetExample(innerType));
                 }
 
