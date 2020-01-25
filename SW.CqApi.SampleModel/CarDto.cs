@@ -15,6 +15,8 @@ namespace SW.CqApi.SampleModel
         public string PlateNumber { get; set; }
         public string Owner { get; set; } = "RandomOwner";
         public string Brand { get; set; }
+        public int[] OwnerIds { get; set; }
+        public List<string> PreviousOwners { get; set; }
         public CarOwner CarOwner { get; set; }
     }
 }

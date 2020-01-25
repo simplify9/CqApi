@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 using SW.PrimitiveTypes;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -98,50 +99,94 @@ namespace SW.CqApi
         }
 
 
-        private IList<OpenApiParameter> GetOpenApiParameters(IList<ParameterInfo> parameters, OpenApiComponents components, bool withKey = false)
+        private IList<OpenApiParameter> GetOpenApiParameters(IEnumerable<ParameterInfo> parameters, OpenApiComponents components, bool withKey = false)
         {
             var openApiParams = new List<OpenApiParameter>();
             foreach(var parameter in parameters)
             {
-                var openApiParam = new OpenApiParameter();
-                openApiParam.Name = parameter.Name;
-                openApiParam.Required = !parameter.IsOptional;
-                openApiParam.AllowEmptyValue = parameter.IsOptional;
-                openApiParam.In = withKey? ParameterLocation.Path : ParameterLocation.Query;
-                openApiParam.Schema = new OpenApiSchema
+                var schemaParam = ExplodeParameter(parameter.ParameterType, components);
+                if (schemaParam.Properties.Count > 0)
                 {
-                    Type = parameter.ParameterType.FullName
-                };
-                openApiParams.Add(openApiParam);
+                    foreach(var prop in schemaParam.Properties.Values)
+                    {
+                        openApiParams.Add(new OpenApiParameter
+                        {
+                            Name = prop.Title,
+                            Required = !prop.Nullable,
+                            AllowEmptyValue = !prop.Nullable,
+                            In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
+                            Schema = new OpenApiSchema
+                            {
+                                Type = parameter.ParameterType.FullName
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    openApiParams.Add(new OpenApiParameter
+                    {
+                        Name = parameter.Name,
+                        Required = !parameter.IsOptional,
+                        AllowEmptyValue = parameter.IsOptional,
+                        In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
+                        Schema = new OpenApiSchema
+                        {
+                            Type = parameter.ParameterType.FullName
+                        }
+                    });
+                }
             }
             return openApiParams;
         }
 
-        private OpenApiSchema ExplodeParameter (Type parameter, OpenApiComponents components)
+        private IOpenApiAny GetExample(Type parameter)
         {
-            int randomNum = new Random().Next() % 3;
             if (parameter == typeof(string))
             {
+                var intfs = parameter.GetInterfaces();
+                int randomNum = new Random().Next() % 3;
                 var words = new string[] { "foo", "bar", "baz" };
-                return new OpenApiSchema
-                {
-                    Type = parameter.Name,
-                    Example = new OpenApiString(words[randomNum])
-                };
+                return new OpenApiString(words[randomNum]);
             }
             else if (parameter == typeof(int) || parameter.IsAssignableFrom(typeof(int)))
             {
-                return new OpenApiSchema
-                {
-                    Type = parameter.Name,
-                    Example = new OpenApiInteger(randomNum)
-                };
+                int randomNum = new Random().Next() % 400;
+                return new OpenApiInteger(randomNum);
             }
-            else if (parameter.IsPrimitive)
+            else if (parameter == typeof(bool))
+            {
+                int randomNum = new Random().Next() % 1;
+                return new OpenApiBoolean(randomNum == 0);
+            }
+            else if (parameter.GetInterfaces().Contains(typeof(IEnumerable)))
+            {
+                var exampleArr = new OpenApiArray();
+                int randomNum = new Random().Next() % 3;
+                for(int _ = 0; _ < randomNum + 1; _++)
+                {
+                    var innerType = parameter.GetElementType() ?? parameter.GenericTypeArguments[0];
+                    exampleArr.Add(GetExample(innerType));
+                }
+
+                return exampleArr;
+            }
+            else
+            {
+                return new OpenApiNull();
+            }
+
+        }
+
+        private OpenApiSchema ExplodeParameter (Type parameter, OpenApiComponents components)
+        {
+            //strings are enumerable
+            if(parameter.IsPrimitive || parameter.GetInterfaces().Contains(typeof(IEnumerable)))
             {
                 return new OpenApiSchema
                 {
-                    Type = parameter.Name
+                    Type = parameter.Name,
+                    Example = GetExample(parameter)
                 };
             }
             else
@@ -169,7 +214,7 @@ namespace SW.CqApi
             }
         }
 
-        private OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo, OpenApiComponents components)
+        private OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo, OpenApiComponents components, bool withKey = false)
         {
 
             var conentMediaType  = new OpenApiMediaType
@@ -180,9 +225,11 @@ namespace SW.CqApi
                         methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName 
                 }
             };
+            var relevantParameters = withKey ? methodInfo.GetParameters().Skip(1): methodInfo.GetParameters();
             var paramterDict = new Dictionary<string, OpenApiSchema>();
 
-            foreach(var param in methodInfo.GetParameters())
+
+            foreach(var param in relevantParameters)
             {
                 paramterDict[param.Name] = ExplodeParameter(param.ParameterType, components);
             }
@@ -190,7 +237,7 @@ namespace SW.CqApi
             var requestBody = new OpenApiRequestBody
             {
                 Description = "Command Body",
-                Required = methodInfo.GetParameters().Any(p => !p.IsOptional),
+                Required = relevantParameters.Any(p => !p.IsOptional),
                 Content =
                 {
                     ["application/json"] = new OpenApiMediaType
@@ -319,6 +366,8 @@ namespace SW.CqApi
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
+                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
+                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
                         apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, apiOperation);
                     }
@@ -327,7 +376,9 @@ namespace SW.CqApi
                     {
                         var path = $"{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
-                        baseApiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
+                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
@@ -336,9 +387,9 @@ namespace SW.CqApi
                     {
 
                         var path = $"{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
-
                         initializePath(document, path);
-
+                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
