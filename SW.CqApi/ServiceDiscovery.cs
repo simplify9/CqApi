@@ -144,7 +144,6 @@ namespace SW.CqApi
         {
             if (parameter == typeof(string))
             {
-                var intfs = parameter.GetInterfaces();
                 int randomNum = new Random().Next() % 3;
                 var words = new string[] { "foo", "bar", "baz" };
                 return new OpenApiString(words[randomNum]);
@@ -180,8 +179,15 @@ namespace SW.CqApi
 
         private OpenApiSchema ExplodeParameter (Type parameter, OpenApiComponents components)
         {
-            //strings are enumerable
-            if(parameter.IsPrimitive || parameter.GetInterfaces().Contains(typeof(IEnumerable)))
+            bool isEnumurableType = parameter.GetInterfaces().Contains(typeof(IEnumerable));
+            bool isSimpleEnum = parameter == typeof(string);
+            if (isEnumurableType && !isSimpleEnum)
+            {
+                Type inner = parameter.GetElementType() ?? parameter.GenericTypeArguments[0];
+                isSimpleEnum = inner.IsPrimitive || inner == typeof(string) || inner == typeof(object) || inner == typeof(decimal);
+            }
+
+            if (parameter.IsPrimitive || isSimpleEnum || parameter == typeof(decimal) || parameter == typeof(object))
             {
                 return new OpenApiSchema
                 {
@@ -191,17 +197,42 @@ namespace SW.CqApi
             }
             else
             {
-                if (components.Schemas.ContainsKey(parameter.Name))
-                    //TODO: Reference instead of copy
-                    return components.Schemas[parameter.Name];
+                if (components.Schemas.ContainsKey(parameter.Name)) return components.Schemas[parameter.Name];
+                if (parameter.Name.Contains("Nullable")) return ExplodeParameter(parameter.GenericTypeArguments[0], components);
+
                 else
                 {
                     var paramSchemeDict = new Dictionary<string, OpenApiSchema>();
-                    var props = parameter.GetProperties();
-                    foreach (var prop in props)
+                    var type = isEnumurableType ? parameter.GetElementType() ?? parameter.GenericTypeArguments[0] : parameter;
+                    if (isEnumurableType)
+                        return ExplodeParameter(type, components);
+                    
+                    if (type.IsPrimitive) return ExplodeParameter(type, components);
+
+                    if (type.IsEnum)
                     {
-                        paramSchemeDict[prop.Name] = ExplodeParameter(prop.PropertyType, components);
+                        foreach(var name in type.GetEnumNames())
+                        {
+                            paramSchemeDict[name] = new OpenApiSchema
+                            {
+                                Type = name
+                            };
+                        }
                     }
+                    else
+                    {
+                        var props = type.GetProperties();
+                        foreach (var prop in props)
+                        {
+                            if (prop.PropertyType == parameter) continue;
+                            if(parameter.Name.ToLower().Contains("datetime[]"))
+                            {
+                                Console.WriteLine("");
+                            }
+                            paramSchemeDict[prop.Name] = ExplodeParameter(prop.PropertyType, components);
+                        }
+                    }
+
                     var schema = new OpenApiSchema
                     {
                         Title = parameter.Name,
@@ -275,9 +306,11 @@ namespace SW.CqApi
                     Description = "OK",
                     Content = {
                         ["application/json"] = returnMediaType
-                    },
-                    
-
+                    }
+                },
+                ["404"] = new OpenApiResponse
+                {
+                    Description = "Not found"
                 }
             };
 
@@ -288,7 +321,27 @@ namespace SW.CqApi
         public string GetOpenApiDocument()
         {
 
+            var desc = $"This API includes ways to manipulate ";
+            var keysArr = resourceHandlers.Keys.ToArray<string>();
+            for (byte i = 0; i < keysArr.Length; i++)
+                desc += i + 1 == keysArr.Length ? $"{keysArr[i]}.\n" :
+                        i + 1 == keysArr.Length - 1 ? $"{keysArr[i]} and " :
+                        $"{keysArr[i]},";
+
             var components = new OpenApiComponents();
+            /*
+            var conditionsType = new SearchyRequest().Conditions.GetType().GenericTypeArguments[0];
+            var sortsType = new SearchyRequest().Sorts.GetType().GenericTypeArguments[0];
+            components.Schemas["SearchyRequest"] = new OpenApiSchema
+            {
+                Properties =
+                {
+                    ["Conditions"] = ExplodeParameter(conditionsType, components),
+                    ["Sorts"] = ExplodeParameter(sortsType, components),
+
+                }
+            };
+            */
 
             var document = new OpenApiDocument
             {
@@ -296,6 +349,7 @@ namespace SW.CqApi
                 {
                     Version = "1.0.0",
                     Title = "Open API Document",
+                    Description = desc
                 },
                 Servers = new List<OpenApiServer>
                 {
@@ -303,7 +357,6 @@ namespace SW.CqApi
                 },
                 Paths = new OpenApiPaths(),
                 Components = components
-
             };
 
 
