@@ -12,10 +12,10 @@ variables:
 steps:
 
 - task: UseDotNet@2
-  displayName: 'Use .NET Core sdk 3.1.100'
+  displayName: 'Use .NET Core sdk 3.1.101'
   inputs:
     packageType: sdk
-    version: 3.1.100
+    version: 3.1.101
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - task: DotNetCoreCLI@2
@@ -43,7 +43,7 @@ steps:
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
   inputs:
     command: pack
-    packagesToPack: 'SW.CqApi/SW.CqApi.csproj;SW.CqApi.Client/SW.CqApi.Client.csproj;'
+    packagesToPack: 'SW.CqApi/SW.CqApi.csproj'
     nobuild: true
     versioningScheme: byBuildNumber
 
