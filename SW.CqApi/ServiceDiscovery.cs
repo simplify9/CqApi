@@ -1,17 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Writers;
+using SW.CqApi.Utils;
 using SW.PrimitiveTypes;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace SW.CqApi
 {
@@ -32,9 +29,6 @@ namespace SW.CqApi
          *  delete /key         "delete/key"
          * 
          */
-
-
-
 
         private readonly ILogger<ServiceDiscovery> logger;
         private readonly IDictionary<string, IDictionary<string, HandlerInfo>> resourceHandlers = new Dictionary<string, IDictionary<string, HandlerInfo>>(StringComparer.OrdinalIgnoreCase);
@@ -98,204 +92,24 @@ namespace SW.CqApi
 
         }
 
-
-        private IList<OpenApiParameter> GetOpenApiParameters(IEnumerable<ParameterInfo> parameters, OpenApiComponents components, bool withKey = false)
-        {
-            var openApiParams = new List<OpenApiParameter>();
-            foreach(var parameter in parameters)
-            {
-                var schemaParam = ExplodeParameter(parameter.ParameterType, components);
-                if (schemaParam.Properties.Count > 0)
-                {
-                    foreach(var prop in schemaParam.Properties.Values)
-                    {
-                        openApiParams.Add(new OpenApiParameter
-                        {
-                            Name = prop.Title,
-                            Required = !prop.Nullable,
-                            AllowEmptyValue = !prop.Nullable,
-                            In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
-                            Schema = new OpenApiSchema
-                            {
-                                Type = parameter.ParameterType.FullName
-                            }
-                        });
-                    }
-                }
-                else
-                {
-                    openApiParams.Add(new OpenApiParameter
-                    {
-                        Name = parameter.Name,
-                        Required = !parameter.IsOptional,
-                        AllowEmptyValue = parameter.IsOptional,
-                        In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
-                        Schema = new OpenApiSchema
-                        {
-                            Type = parameter.ParameterType.FullName
-                        }
-                    });
-                }
-            }
-            return openApiParams;
-        }
-
-        private IOpenApiAny GetExample(Type parameter)
-        {
-            if (parameter == typeof(string))
-            {
-                var intfs = parameter.GetInterfaces();
-                int randomNum = new Random().Next() % 3;
-                var words = new string[] { "foo", "bar", "baz" };
-                return new OpenApiString(words[randomNum]);
-            }
-            else if (parameter == typeof(int) || parameter.IsAssignableFrom(typeof(int)))
-            {
-                int randomNum = new Random().Next() % 400;
-                return new OpenApiInteger(randomNum);
-            }
-            else if (parameter == typeof(bool))
-            {
-                int randomNum = new Random().Next() % 1;
-                return new OpenApiBoolean(randomNum == 0);
-            }
-            else if (parameter.GetInterfaces().Contains(typeof(IEnumerable)))
-            {
-                var exampleArr = new OpenApiArray();
-                int randomNum = new Random().Next() % 3;
-                for(int _ = 0; _ < randomNum + 1; _++)
-                {
-                    var innerType = parameter.GetElementType() ?? parameter.GenericTypeArguments[0];
-                    exampleArr.Add(GetExample(innerType));
-                }
-
-                return exampleArr;
-            }
-            else
-            {
-                return new OpenApiNull();
-            }
-
-        }
-
-        private OpenApiSchema ExplodeParameter (Type parameter, OpenApiComponents components)
-        {
-            //strings are enumerable
-            if(parameter.IsPrimitive || parameter.GetInterfaces().Contains(typeof(IEnumerable)))
-            {
-                return new OpenApiSchema
-                {
-                    Type = parameter.Name,
-                    Example = GetExample(parameter)
-                };
-            }
-            else
-            {
-                if (components.Schemas.ContainsKey(parameter.Name))
-                    //TODO: Reference instead of copy
-                    return components.Schemas[parameter.Name];
-                else
-                {
-                    var paramSchemeDict = new Dictionary<string, OpenApiSchema>();
-                    var props = parameter.GetProperties();
-                    foreach (var prop in props)
-                    {
-                        paramSchemeDict[prop.Name] = ExplodeParameter(prop.PropertyType, components);
-                    }
-                    var schema = new OpenApiSchema
-                    {
-                        Title = parameter.Name,
-                        Properties = paramSchemeDict
-                    };
-                    components.Schemas[parameter.Name] = schema;
-                    return schema;
-                }
-
-            }
-        }
-
-        private OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo, OpenApiComponents components, bool withKey = false)
-        {
-
-            var conentMediaType  = new OpenApiMediaType
-            {
-                Schema = new OpenApiSchema
-                {
-                    Type = methodInfo.ReturnType.FullName.Contains("Task") ? 
-                        methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName 
-                }
-            };
-            var relevantParameters = withKey ? methodInfo.GetParameters().Skip(1): methodInfo.GetParameters();
-            var paramterDict = new Dictionary<string, OpenApiSchema>();
-
-
-            foreach(var param in relevantParameters)
-            {
-                paramterDict[param.Name] = ExplodeParameter(param.ParameterType, components);
-            }
-            
-            var requestBody = new OpenApiRequestBody
-            {
-                Description = "Command Body",
-                Required = relevantParameters.Any(p => !p.IsOptional),
-                Content =
-                {
-                    ["application/json"] = new OpenApiMediaType
-                    {
-                        Schema = new OpenApiSchema
-                        {
-                            Title = "Body",
-                            Properties = paramterDict,
-                        }
-                    }
-                },
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.RequestBody,
-                }
-            };
-
-            return requestBody;
-        }
-
-        private OpenApiResponses GetOpenApiResponses(MethodInfo methodInfo)
-        {
-            var returnMediaType = new OpenApiMediaType
-            {
-                Schema = new OpenApiSchema
-                {
-                    Type = methodInfo.ReturnType.FullName.Contains("Task") ? methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName ,
-                }
-            };
-
-            var responses = new OpenApiResponses
-            {
-                ["200"] = new OpenApiResponse
-                {
-                    Description = "OK",
-                    Content = {
-                        ["application/json"] = returnMediaType
-                    },
-                    
-
-                }
-            };
-
-            return responses;
-
-        }
-
         public string GetOpenApiDocument()
         {
 
-            var components = new OpenApiComponents();
+            var desc = $"This API includes ways to manipulate ";
+            var keysArr = resourceHandlers.Keys.ToArray<string>();
+            for (byte i = 0; i < keysArr.Length; i++)
+                desc += i + 1 == keysArr.Length ? $"{keysArr[i]}.\n" :
+                        i + 1 == keysArr.Length - 1 ? $"{keysArr[i]} and " :
+                        $"{keysArr[i]},";
 
+            var components = new OpenApiComponents();
             var document = new OpenApiDocument
             {
                 Info = new OpenApiInfo
                 {
                     Version = "1.0.0",
                     Title = "Open API Document",
+                    Description = desc
                 },
                 Servers = new List<OpenApiServer>
                 {
@@ -303,7 +117,6 @@ namespace SW.CqApi
                 },
                 Paths = new OpenApiPaths(),
                 Components = components
-
             };
 
 
@@ -339,8 +152,8 @@ namespace SW.CqApi
                     if (handler.Key == "get")
                     {
                         initializePath(document, res.Key);
-                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), components);
-                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components);
+                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[res.Key].Operations.Add(OperationType.Get, apiOperation);
                     }
 
@@ -348,8 +161,8 @@ namespace SW.CqApi
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
-                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
-                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
+                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, apiOperation);
                     }
 
@@ -357,8 +170,8 @@ namespace SW.CqApi
                     {
 
                         initializePath(document, res.Key);
-                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components);
-                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components);
+                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[res.Key].Operations.Add(OperationType.Post, apiOperation);
                     }
 
@@ -366,9 +179,9 @@ namespace SW.CqApi
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
-                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
-                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
-                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, apiOperation);
                     }
 
@@ -376,9 +189,9 @@ namespace SW.CqApi
                     {
                         var path = $"{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
-                        apiOperation.Parameters = GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
-                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
-                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
@@ -388,8 +201,8 @@ namespace SW.CqApi
 
                         var path = $"{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
-                        apiOperation.RequestBody = GetOpenApiRequestBody(handler.Value.Method, components, true);
-                        apiOperation.Responses = GetOpenApiResponses(handler.Value.Method);
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
