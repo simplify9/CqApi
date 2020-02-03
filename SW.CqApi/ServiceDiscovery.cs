@@ -102,6 +102,7 @@ namespace SW.CqApi
                         i + 1 == keysArr.Length - 1 ? $"{keysArr[i]} and " :
                         $"{keysArr[i]},";
 
+            var roles = new List<string>();
             var components = new OpenApiComponents();
             var document = new OpenApiDocument
             {
@@ -113,12 +114,11 @@ namespace SW.CqApi
                 },
                 Servers = new List<OpenApiServer>
                 {
-                    new OpenApiServer { Url = "http://petstore.swagger.io/api" }
+                    //new OpenApiServer { Url = "http://petstore.swagger.io/api" }
                 },
                 Paths = new OpenApiPaths(),
-                Components = components
+                Components = components,
             };
-
 
             foreach (var res in resourceHandlers)
             {
@@ -129,9 +129,11 @@ namespace SW.CqApi
                     Description = $"Commands and Queries related to {res.Key}"
                 };
                 document.Tags.Add(tag);
+
                 pathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
                 foreach (var handler in res.Value)
                 {
+                    roles.Add( $"{res.Key}.{handler.Value.HandlerType.Name}");
                     var baseApiOperation = HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation;
                     var apiOperation = new OpenApiOperation()
                     {
@@ -210,6 +212,7 @@ namespace SW.CqApi
                 }
             }
 
+            document.Components = components.AddSecurity(roles);
             return document.Serialize(OpenApiSpecVersion.OpenApi2_0, OpenApiFormat.Json);
         }
 
