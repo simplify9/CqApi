@@ -77,6 +77,26 @@ namespace SW.CqApi.Utils
 
             }
         }
+        public static bool IsNumericType(Type t )
+        {
+            switch (Type.GetTypeCode(t))
+            {
+                case TypeCode.Byte:
+                case TypeCode.SByte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.Decimal:
+                case TypeCode.Double:
+                case TypeCode.Single:
+                    return true;
+                default:
+                    return false;
+            }
+        }
         static public IOpenApiAny GetExample(Type parameter)
         {
             if (parameter == typeof(string))
@@ -85,7 +105,7 @@ namespace SW.CqApi.Utils
                 var words = new string[] { "foo", "bar", "baz" };
                 return new OpenApiString(words[randomNum]);
             }
-            else if (parameter == typeof(int) || parameter.IsAssignableFrom(typeof(int)))
+            else if (IsNumericType(parameter))
             {
                 int randomNum = new Random().Next() % 400;
                 return new OpenApiInteger(randomNum);
