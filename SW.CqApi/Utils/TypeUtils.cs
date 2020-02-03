@@ -45,13 +45,16 @@ namespace SW.CqApi.Utils
 
                     if (type.IsEnum)
                     {
-                        foreach(var name in type.GetEnumNames())
+                        var values = type.GetEnumNames();
+                        var openApiValues = new List<IOpenApiAny>();
+                        foreach(var value in values)
+                            openApiValues.Add(new OpenApiString(value));
+
+                        return new OpenApiSchema
                         {
-                            paramSchemeDict[name] = new OpenApiSchema
-                            {
-                                Type = name
-                            };
-                        }
+                            Type = "String",
+                            Enum = openApiValues
+                        };
                     }
                     else
                     {
