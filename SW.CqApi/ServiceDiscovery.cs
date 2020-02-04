@@ -151,11 +151,12 @@ namespace SW.CqApi
                         Summary = baseApiOperation.Summary
                     };
                     apiOperation.Tags.Add(tag);
+                    var returns = handler.Value.HandlerType.GetCustomAttributes<ReturnsAttribute>();
+                    apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method, returns, components);
                     if (handler.Key == "get")
                     {
                         initializePath(document, res.Key);
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components);
-                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[res.Key].Operations.Add(OperationType.Get, apiOperation);
                     }
 
@@ -164,7 +165,6 @@ namespace SW.CqApi
 
                         initializePath(document, $"{res.Key}/{{key}}");
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
-                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, apiOperation);
                     }
 
@@ -173,7 +173,6 @@ namespace SW.CqApi
 
                         initializePath(document, res.Key);
                         apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components);
-                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[res.Key].Operations.Add(OperationType.Post, apiOperation);
                     }
 
@@ -183,7 +182,6 @@ namespace SW.CqApi
                         initializePath(document, $"{res.Key}/{{key}}");
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
                         apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
-                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, apiOperation);
                     }
 
@@ -193,7 +191,6 @@ namespace SW.CqApi
                         initializePath(document, path);
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
                         apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
-                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
@@ -204,7 +201,6 @@ namespace SW.CqApi
                         var path = $"{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
                         apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
-                        apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
