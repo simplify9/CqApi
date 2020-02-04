@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
 
-    
+    [Returns(Description = "", StatusCode = 201, Type = typeof(string))]
     public class Create : ICommandHandler<CarDto>
     {
         async public Task<object> Handle(CarDto request)

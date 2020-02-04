@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Models;
+using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,9 @@ namespace SW.CqApi.Utils
 {
     public class OpenApiUtils
     {
-        public static OpenApiResponses GetOpenApiResponses(MethodInfo methodInfo)
+        public static OpenApiResponses GetOpenApiResponses(MethodInfo methodInfo, IEnumerable<ReturnsAttribute> returnsAttributes, OpenApiComponents components)
         {
+            //var methodInfo = handlerInfo.Method;
             var returnMediaType = new OpenApiMediaType
             {
                 Schema = new OpenApiSchema
@@ -19,21 +21,7 @@ namespace SW.CqApi.Utils
                 }
             };
 
-            var responses = new OpenApiResponses
-            {
-                ["200"] = new OpenApiResponse
-                {
-                    Description = "OK",
-                    Content = {
-                        ["application/json"] = returnMediaType
-                    }
-                },
-                ["404"] = new OpenApiResponse
-                {
-                    Description = "Not found"
-                }
-            };
-
+            var responses = returnsAttributes.ToOpenApiResponses(components);
             return responses;
         }
 

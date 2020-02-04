@@ -8,6 +8,7 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
 
     [HandlerName("ScanIncoming")]
+    [Returns(Type = typeof(object), StatusCode = 202, Description = "lookup == false")]
     public class ScanIncoming : ICommandHandler<ScanIncomingCommand>
     {
         private readonly IRequestContext requestContext;
