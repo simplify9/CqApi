@@ -12,6 +12,8 @@ namespace SW.CqApi
         {
             services.AddSingleton<ServiceDiscovery>();
 
+            if (assemblies.Length == 0) assemblies = new Assembly[] { Assembly.GetCallingAssembly() };
+
             services.Scan(scan => scan
                 .FromAssemblies(assemblies)
                 .AddClasses(classes => classes.AssignableTo<IHandler>())
@@ -24,6 +26,7 @@ namespace SW.CqApi
 
             services.AddHttpContextAccessor();
             services.AddScoped<IRequestContext, RequestContext>();
+            services.AddScoped<RequestContextManager>();
         }
     }
 }
