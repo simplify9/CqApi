@@ -30,7 +30,7 @@ namespace SW.CqApi
          * 
          */
 
-        private readonly ILogger<ServiceDiscovery> logger;
+        //private readonly ILogger<ServiceDiscovery> logger;
         private readonly IDictionary<string, IDictionary<string, HandlerInfo>> resourceHandlers = new Dictionary<string, IDictionary<string, HandlerInfo>>(StringComparer.OrdinalIgnoreCase);
 
         public ServiceDiscovery(IServiceProvider serviceProvider, ILogger<ServiceDiscovery> logger)
@@ -134,25 +134,11 @@ namespace SW.CqApi
                 foreach (var handler in res.Value)
                 {
                     roles.Add( $"{res.Key}.{handler.Value.HandlerType.Name}");
-                    var baseApiOperation = HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation;
-                    var apiOperation = new OpenApiOperation()
-                    {
-                        Deprecated = baseApiOperation.Deprecated,
-                        Description = baseApiOperation.Description,
-                        Callbacks = baseApiOperation.Callbacks,
-                        Extensions = baseApiOperation.Extensions,
-                        Responses = baseApiOperation.Responses,
-                        RequestBody = baseApiOperation.RequestBody,
-                        OperationId = baseApiOperation.OperationId,
-                        ExternalDocs = baseApiOperation.ExternalDocs,
-                        Parameters = baseApiOperation.Parameters,
-                        Security = baseApiOperation.Security,
-                        Servers = baseApiOperation.Servers,
-                        Summary = baseApiOperation.Summary
-                    };
+                    var interfaceType = handler.Value.NormalizedInterfaceType;
+                    var apiOperation = HandlerTypeMetadata.Handlers[interfaceType].OpenApiOperation.Clone();
                     apiOperation.Tags.Add(tag);
                     var returns = handler.Value.HandlerType.GetCustomAttributes<ReturnsAttribute>();
-                    apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method, returns, components);
+                    apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method, returns, components, interfaceType.Name);
                     if (handler.Key == "get")
                     {
                         initializePath(document, res.Key);
