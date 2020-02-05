@@ -8,9 +8,27 @@ using System.Text;
 
 namespace SW.CqApi.Utils
 {
-    public class OpenApiUtils
+    public static class OpenApiUtils
     {
-        public static OpenApiResponses GetOpenApiResponses(MethodInfo methodInfo, IEnumerable<ReturnsAttribute> returnsAttributes, OpenApiComponents components)
+        public static OpenApiOperation Clone(this OpenApiOperation baseApiOperation)
+        {
+            return new OpenApiOperation
+            {
+                Deprecated = baseApiOperation.Deprecated,
+                Description = baseApiOperation.Description,
+                Callbacks = baseApiOperation.Callbacks,
+                Extensions = baseApiOperation.Extensions,
+                Responses = baseApiOperation.Responses,
+                RequestBody = baseApiOperation.RequestBody,
+                OperationId = baseApiOperation.OperationId,
+                ExternalDocs = baseApiOperation.ExternalDocs,
+                Parameters = baseApiOperation.Parameters,
+                Security = baseApiOperation.Security,
+                Servers = baseApiOperation.Servers,
+                Summary = baseApiOperation.Summary
+            };
+        }
+        public static OpenApiResponses GetOpenApiResponses(MethodInfo methodInfo, IEnumerable<ReturnsAttribute> returnsAttributes, OpenApiComponents components, string InterfaceType)
         {
             //var methodInfo = handlerInfo.Method;
             var returnMediaType = new OpenApiMediaType
@@ -21,7 +39,9 @@ namespace SW.CqApi.Utils
                 }
             };
 
-            var responses = returnsAttributes.ToOpenApiResponses(components);
+            var responses = returnsAttributes
+                .ToOpenApiResponses(components)
+                .GetDefaultResponses(methodInfo, InterfaceType);
             return responses;
         }
 
