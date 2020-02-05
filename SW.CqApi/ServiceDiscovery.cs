@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
+using SW.CqApi.Utils;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace SW.CqApi
 {
@@ -29,9 +29,6 @@ namespace SW.CqApi
          *  delete /key         "delete/key"
          * 
          */
-
-
-
 
         private readonly ILogger<ServiceDiscovery> logger;
         private readonly IDictionary<string, IDictionary<string, HandlerInfo>> resourceHandlers = new Dictionary<string, IDictionary<string, HandlerInfo>>(StringComparer.OrdinalIgnoreCase);
@@ -97,121 +94,104 @@ namespace SW.CqApi
 
         public string GetOpenApiDocument()
         {
+
+            var desc = $"This API includes ways to manipulate ";
+            var keysArr = resourceHandlers.Keys.ToArray<string>();
+            for (byte i = 0; i < keysArr.Length; i++)
+                desc += i + 1 == keysArr.Length ? $"{keysArr[i]}.\n" :
+                        i + 1 == keysArr.Length - 1 ? $"{keysArr[i]} and " :
+                        $"{keysArr[i]},";
+
+            var roles = new List<string>();
+            var components = new OpenApiComponents();
             var document = new OpenApiDocument
             {
                 Info = new OpenApiInfo
                 {
                     Version = "1.0.0",
-                    Title = "Swagger Petstore (Simple)",
+                    Title = "Open API Document",
+                    Description = desc
                 },
                 Servers = new List<OpenApiServer>
                 {
-                    new OpenApiServer { Url = "http://petstore.swagger.io/api" }
+                    //new OpenApiServer { Url = "http://petstore.swagger.io/api" }
                 },
                 Paths = new OpenApiPaths(),
-
-
+                Components = components,
             };
-
 
             foreach (var res in resourceHandlers)
             {
                 var pathItem = new OpenApiPathItem();
-
                 document.Paths.Add(res.Key, pathItem);
+                var tag = new OpenApiTag {
+                    Name = res.Key,
+                    Description = $"Commands and Queries related to {res.Key}"
+                };
+                document.Tags.Add(tag);
+
                 pathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
                 foreach (var handler in res.Value)
                 {
+                    roles.Add( $"{res.Key}.{handler.Value.HandlerType.Name}");
+                    var baseApiOperation = HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation;
+                    var apiOperation = new OpenApiOperation()
+                    {
+                        Deprecated = baseApiOperation.Deprecated,
+                        Description = baseApiOperation.Description,
+                        Callbacks = baseApiOperation.Callbacks,
+                        Extensions = baseApiOperation.Extensions,
+                        Responses = baseApiOperation.Responses,
+                        RequestBody = baseApiOperation.RequestBody,
+                        OperationId = baseApiOperation.OperationId,
+                        ExternalDocs = baseApiOperation.ExternalDocs,
+                        Parameters = baseApiOperation.Parameters,
+                        Security = baseApiOperation.Security,
+                        Servers = baseApiOperation.Servers,
+                        Summary = baseApiOperation.Summary
+                    };
+                    apiOperation.Tags.Add(tag);
+                    var returns = handler.Value.HandlerType.GetCustomAttributes<ReturnsAttribute>();
+                    apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method, returns, components);
                     if (handler.Key == "get")
                     {
                         initializePath(document, res.Key);
-                        document.Paths[res.Key].Operations.Add(OperationType.Get, HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation);
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components);
+                        document.Paths[res.Key].Operations.Add(OperationType.Get, apiOperation);
                     }
 
                     else if (handler.Key == "get/key")
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
-
-                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, new OpenApiOperation
-                        {
-
-
-                            Description = "Returns all pets from the system that the user has access to",
-                            Responses = new OpenApiResponses
-                            {
-                                ["200"] = new OpenApiResponse
-                                {
-                                    Description = "OK",
-
-                                }
-                            }
-                        });
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
+                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, apiOperation);
                     }
-
 
                     else if (handler.Key == "post")
                     {
 
                         initializePath(document, res.Key);
-
-                        document.Paths[res.Key].Operations.Add(OperationType.Post, new OpenApiOperation
-                        {
-
-                            RequestBody = new OpenApiRequestBody
-                            {
-                                Required = true,
-                                Description = "Command body",
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.RequestBody,
-
-                                }
-                            },
-                            Description = "Returns all pets from the system that the user has access to",
-                            Responses = new OpenApiResponses
-                            {
-                                ["200"] = new OpenApiResponse
-                                {
-                                    Description = "OK",
-
-                                }
-                            }
-                        });
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components);
+                        document.Paths[res.Key].Operations.Add(OperationType.Post, apiOperation);
                     }
 
                     else if (handler.Key == "post/key")
                     {
 
                         initializePath(document, $"{res.Key}/{{key}}");
-                        var openApiOp = HandlerTypeMetadata.Handlers[handler.Value.NormalizedInterfaceType].OpenApiOperation;
-
-                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, openApiOp);
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, apiOperation);
                     }
 
                     else if (handler.Key.StartsWith("post/key"))
                     {
                         var path = $"{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
-
                         initializePath(document, path);
-
-                        document.Paths[path].Operations.Add(OperationType.Post, new OpenApiOperation
-                        {
-
-                            RequestBody = new OpenApiRequestBody
-                            {
-                                
-                            },
-                            Description = "Returns all pets from the system that the user has access to",
-                            Responses = new OpenApiResponses
-                            {
-                                ["200"] = new OpenApiResponse
-                                {
-                                    Description = "OK",
-
-                                }
-                            }
-                        });
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
 
@@ -219,33 +199,16 @@ namespace SW.CqApi
                     {
 
                         var path = $"{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
-
                         initializePath(document, path);
-
-                        document.Paths[path].Operations.Add(OperationType.Post, new OpenApiOperation
-                        {
-
-                            RequestBody = new OpenApiRequestBody
-                            {
-                                Description = "Command",
-                                Required = true
-                            },
-                            Description = "Returns all pets from the system that the user has access to",
-                            Responses = new OpenApiResponses
-                            {
-                                ["200"] = new OpenApiResponse
-                                {
-                                    Description = "OK",
-
-                                }
-                            }
-                        });
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
+                        document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
 
                 }
             }
 
+            document.Components = components.AddSecurity(roles);
             return document.Serialize(OpenApiSpecVersion.OpenApi2_0, OpenApiFormat.Json);
         }
 

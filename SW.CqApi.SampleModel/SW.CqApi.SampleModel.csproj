@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
-    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.2.1.1" />
+    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.2.4.4" />
   </ItemGroup>
 
 </Project>
