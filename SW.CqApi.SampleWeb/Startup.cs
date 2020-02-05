@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,11 +35,9 @@ namespace SW.CqApi.SampleWeb
             {
                 config.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
-            //services.AddI18n();
+
             services.AddCqApi();
-            //services.AddMapiCallContext(); 
             services.AddRazorPages();
-            ;
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).
                 AddCookie(options =>
@@ -78,7 +78,17 @@ namespace SW.CqApi.SampleWeb
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
-               
+
+            });
+
+            app.Use(async (context, next) =>
+            {
+                var routeData = context.GetRouteData();
+                //var tenant = routeData?.Values["tenant"]?.ToString();
+                //if (!string.IsNullOrEmpty(tenant))
+                //    context.Items["tenant"] = tenant;
+
+                await next();
             });
 
             app.UseEndpoints(endpoints =>

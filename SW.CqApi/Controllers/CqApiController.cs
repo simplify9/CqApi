@@ -15,7 +15,7 @@ namespace SW.CqApi
 {
 
     [CqApiExceptionFilter]
-    [Route("cqapi")]
+    [Route("{prefix:cqapiPrefix}")]
     [ApiController]
     [Authorize(AuthenticationSchemes ="Bearer") ]
     [AllowAnonymous]
@@ -137,6 +137,7 @@ namespace SW.CqApi
             if (handlerInfo.NormalizedInterfaceType == typeof(ISearchyHandler))
             {
                 var result = await handlerInstance.Invoke(searchyRequest, lookup, searchPhrase);
+                if (lookup) return StatusCode(206, result);
                 return Ok(result);
 
             }
@@ -152,6 +153,7 @@ namespace SW.CqApi
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
             {
                 var result = await handlerInstance.Invoke();
+                if (result == null) return NoContent();
                 return Ok(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<>))
@@ -176,6 +178,7 @@ namespace SW.CqApi
                 var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
                 var result = await handlerInstance.Invoke(keyParam, lookup);
                 if (result == null) return NotFound();
+                if (lookup) return StatusCode(206, result);
                 return Ok(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IDeleteHandler<>))
