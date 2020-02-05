@@ -27,6 +27,11 @@ namespace SW.CqApi
             services.AddHttpContextAccessor();
             services.AddScoped<IRequestContext, RequestContext>();
             services.AddScoped<RequestContextManager>();
+
+            services.AddRouting(options =>
+            {
+                options.ConstraintMap.Add("cqapiPrefix", typeof(CqapiPrefixRouteConstraint));
+            });
         }
     }
 }
