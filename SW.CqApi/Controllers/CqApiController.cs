@@ -17,7 +17,7 @@ namespace SW.CqApi
     [CqApiExceptionFilter]
     [Route("{prefix:cqapiPrefix}")]
     [ApiController]
-    [Authorize(AuthenticationSchemes ="Bearer") ]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [AllowAnonymous]
     public class CqApiController : ControllerBase
     {
@@ -148,7 +148,7 @@ namespace SW.CqApi
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
             {
-                throw new NotImplementedException(); 
+                throw new NotImplementedException();
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
             {
@@ -158,7 +158,15 @@ namespace SW.CqApi
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<>))
             {
-                var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[0]);
+                object typedParam;
+                try
+                {
+                    typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[0]);
+                }
+                catch (Exception ex)
+                {
+                    throw new BadInputFormat(ex);
+                }
                 if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
                 var result = await handlerInstance.Invoke(typedParam);
                 if (result == null) return NoContent();
@@ -166,8 +174,19 @@ namespace SW.CqApi
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<,>))
             {
-                var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
-                var typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
+                object typedParam;
+                object keyParam;
+                try
+                {
+                    keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                    typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
+
+                }
+                catch (Exception ex)
+                {
+                    throw new BadInputFormat(ex);
+                }
+
                 if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
                 var result = await handlerInstance.Invoke(keyParam, typedParam);
                 if (result == null) return NoContent();
@@ -175,7 +194,15 @@ namespace SW.CqApi
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IGetHandler<>))
             {
-                var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                object keyParam;
+                try
+                {
+                    keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                }
+                catch (Exception ex)
+                {
+                    throw new BadInputFormat(ex);
+                }
                 var result = await handlerInstance.Invoke(keyParam, lookup);
                 if (result == null) return NotFound();
                 if (lookup) return StatusCode(206, result);
@@ -183,7 +210,15 @@ namespace SW.CqApi
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IDeleteHandler<>))
             {
-                var keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                object keyParam;
+                try
+                {
+                    keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                }
+                catch (Exception ex)
+                {
+                    throw new BadInputFormat(ex);
+                }
                 var result = await handlerInstance.Invoke(keyParam);
                 return Accepted();
             }
