@@ -7,6 +7,7 @@ namespace SW.CqApi.SampleModel
 {
     public class CarOwner {
         public string Name { get; set; }
+        public DateTime BirthDay { get; set; }
         public int Age { get; set; }
     }
     public class CarDto
@@ -18,5 +19,6 @@ namespace SW.CqApi.SampleModel
         public int[] OwnerIds { get; set; }
         public List<CarOwner> PreviousOwners { get; set; }
         public CarOwner CarOwner { get; set; }
+        public IDictionary<string, IEnumerable<string>> testDictionary { get; set; }
     }
 }
