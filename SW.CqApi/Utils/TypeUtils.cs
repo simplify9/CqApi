@@ -8,75 +8,64 @@ using System.Text;
 
 namespace SW.CqApi.Utils
 {
-    public class TypeUtils
+    public static class TypeUtils
     {
-
-        public static OpenApiSchema ExplodeParameter (Type parameter, OpenApiComponents components)
+        private static OpenApiSchema GetPrimtiveSchema(this Type parameter)
         {
-            bool isEnumurableType = parameter.GetInterfaces().Contains(typeof(IEnumerable));
-            bool isSimpleEnum = parameter == typeof(string);
-            var type = parameter;
-            if (isEnumurableType && !isSimpleEnum)
-            {
-                type = parameter.GetElementType() ?? parameter.GenericTypeArguments[0];
-                isSimpleEnum = type.IsPrimitive || type == typeof(string) || type == typeof(object) || type == typeof(decimal);
-            }
+            OpenApiSchema schema = parameter.GetJsonType().GetOpenApiSchema();
+            return schema;
+        }
 
-            if (parameter.IsPrimitive || isSimpleEnum || parameter == typeof(decimal) || parameter == typeof(object))
+        public static OpenApiSchema ExplodeParameter(Type parameter, OpenApiComponents components)
+        {
+            OpenApiSchema schema = new OpenApiSchema();
+            var jsonifed = parameter.GetJsonType();
+            if (components.Schemas.ContainsKey(parameter.Name))
             {
-                return new OpenApiSchema
+                return components.Schemas[parameter.Name];
+            }
+            else if (parameter.IsEnum)
+            {
+                List<IOpenApiAny> enumVals = new List<IOpenApiAny>();
+                foreach(var enumSingle in parameter.GetEnumNames())
                 {
-                    Type = parameter.Name,
-                    Example = GetExample(parameter)
-                };
+                    var enumStr = enumSingle.ToString();
+                    enumVals.Add(new OpenApiString(enumStr));
+                }
+                schema.Type = "string";
+                schema.Enum = enumVals;
+            }
+            else if(parameter.IsPrimitive || IsNumericType(parameter) || parameter == typeof(string))
+            {
+                schema.Type = jsonifed.Type.ToJsonType();
+                schema.Example = GetExample(parameter);
+            }
+            else if (jsonifed.Items != null)
+            {
+                schema.Type = jsonifed.Type.ToJsonType();
+                schema.Items = jsonifed.Items[0].GetOpenApiSchema();
+                schema.Example = GetExample(parameter);
+            }
+            else if(parameter.GetProperties().Length != 0 && !IsNumericType(parameter))
+            {
+                Dictionary<string, OpenApiSchema> props = new Dictionary<string, OpenApiSchema>();
+                foreach(var prop in parameter.GetProperties())
+                {
+                    if (prop.PropertyType == parameter) continue;
+                    props[prop.Name] = ExplodeParameter(prop.PropertyType, components);
+                }
+
+                schema.Properties = props;
+                components.Schemas[parameter.Name] = schema;
             }
             else
             {
-                if (components.Schemas.ContainsKey(parameter.Name)) return components.Schemas[parameter.Name];
-                if (parameter.Name.Contains("Nullable")) return ExplodeParameter(parameter.GenericTypeArguments[0], components);
-
-                else
-                {
-                    var paramSchemeDict = new Dictionary<string, OpenApiSchema>();
-                    if (isEnumurableType)
-                        return ExplodeParameter(type, components);
-                    
-                    if (type.IsPrimitive) return ExplodeParameter(type, components);
-
-                    if (type.IsEnum)
-                    {
-                        var values = type.GetEnumNames();
-                        var openApiValues = new List<IOpenApiAny>();
-                        foreach(var value in values)
-                            openApiValues.Add(new OpenApiString(value));
-
-                        return new OpenApiSchema
-                        {
-                            Type = "String",
-                            Enum = openApiValues
-                        };
-                    }
-                    else
-                    {
-                        var props = type.GetProperties();
-                        foreach (var prop in props)
-                        {
-                            if (prop.PropertyType == parameter) continue;
-                            paramSchemeDict[prop.Name] = ExplodeParameter(prop.PropertyType, components);
-                        }
-                    }
-
-                    var schema = new OpenApiSchema
-                    {
-                        Title = parameter.Name,
-                        Properties = paramSchemeDict
-                    };
-                    components.Schemas[parameter.Name] = schema;
-                    return schema;
-                }
-
+                schema.Type = "undefined";
             }
+            return schema;
+
         }
+
         public static bool IsNumericType(Type t )
         {
             switch (Type.GetTypeCode(t))
