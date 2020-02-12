@@ -21,7 +21,7 @@ namespace SW.CqApi
 
             else if (context.Exception is CqApiForbidException)
 
-                context.Result = new ForbidResult();
+                context.Result = new UnauthorizedResult();
 
             else if (context.Exception is SWException)
             {
