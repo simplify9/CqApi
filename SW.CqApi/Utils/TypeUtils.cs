@@ -24,6 +24,11 @@ namespace SW.CqApi.Utils
             {
                 return components.Schemas[parameter.Name];
             }
+            else if (Nullable.GetUnderlyingType(parameter) != null)
+            {
+                schema =  ExplodeParameter(Nullable.GetUnderlyingType(parameter), components);
+                schema.Nullable = true;
+            }
             else if (parameter.IsEnum)
             {
                 List<IOpenApiAny> enumVals = new List<IOpenApiAny>();
@@ -57,6 +62,15 @@ namespace SW.CqApi.Utils
 
                 schema.Properties = props;
                 components.Schemas[parameter.Name] = schema;
+            }
+            else if (parameter.GenericTypeArguments.Length > 0)
+            {
+                foreach(var genArg in parameter.GenericTypeArguments)
+                {
+                    ExplodeParameter(genArg, components);
+                }
+                schema.Properties = ExplodeParameter(parameter.BaseType, components).Properties;
+                schema.Type = "object";
             }
             else
             {

@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Schema;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SW.CqApi.Utils
 {
@@ -11,9 +12,28 @@ namespace SW.CqApi.Utils
         public static JsonSchema GetJsonType(this Type t)
         {
             JsonSchemaGenerator gen = new JsonSchemaGenerator();
-            JsonSchema json = gen.Generate(t);
+            JsonSchema json = gen.Generate(t.SimplifyType());
             return json;
         }
+
+        public static Type SimplifyType(this Type t)
+        {
+            var intfs = t.GetInterfaces();
+            if (Nullable.GetUnderlyingType(t) != null)
+            {
+                return Nullable.GetUnderlyingType(t);
+            }
+            else if (t.ContainsGenericParameters)
+            {
+                return t.GenericTypeArguments[0];
+            }
+            else
+            {
+                return t;
+            }
+
+        }
+
         public static OpenApiSchema GetOpenApiSchema(this JsonSchema json )
         {
             OpenApiSchema op = new OpenApiSchema();
