@@ -8,8 +8,17 @@ namespace SW.CqApi.SampleModel
     public class CarOwner {
         public string Name { get; set; }
         public DateTime BirthDay { get; set; }
-        public int Age { get; set; }
+        public int? Age { get; set; }
     }
+
+    public class GenericTest<T>
+    {
+        public Type GetT()
+        {
+            return typeof(T);
+        }
+    }
+
     public class CarDto
     {
         [Required]
@@ -18,6 +27,7 @@ namespace SW.CqApi.SampleModel
         public string Brand { get; set; }
         public int[] OwnerIds { get; set; }
         public List<CarOwner> PreviousOwners { get; set; }
+        public GenericTest<int> genericTest { get; set; }
         public CarOwner CarOwner { get; set; }
         public IDictionary<string, IEnumerable<string>> testDictionary { get; set; }
     }
