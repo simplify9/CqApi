@@ -16,10 +16,36 @@ namespace SW.CqApi.Utils
             return schema;
         }
 
+        public static string GetGenericName(this Type genType)
+        {
+            string[] split = genType.Name.Split('`');
+            string name = $"{split[0]}<";
+            for(byte i = 0; i < genType.GenericTypeArguments.Length; i++)
+            {
+                name += (genType.GenericTypeArguments[i].GenericTypeArguments.Length > 0? genType.GenericTypeArguments[i].GetGenericName() : genType.GenericTypeArguments[i].Name);
+                if(i == genType.GenericTypeArguments.Length - 1) name += ">";
+                else name += ",";
+            }
+            return name;
+        }
+
         public static OpenApiSchema ExplodeParameter(Type parameter, OpenApiComponents components)
         {
             OpenApiSchema schema = new OpenApiSchema();
             var jsonifed = parameter.GetJsonType();
+            string name = parameter.Name;
+
+            if (parameter.GenericTypeArguments.Length > 0)
+            {
+                foreach(var genArg in parameter.GenericTypeArguments)
+                {
+                    ExplodeParameter(genArg, components);
+                }
+                schema.Type = "object";
+                name = parameter.GetGenericName();
+            }
+
+
             if (components.Schemas.ContainsKey(parameter.Name))
             {
                 return components.Schemas[parameter.Name];
@@ -61,16 +87,7 @@ namespace SW.CqApi.Utils
                 }
 
                 schema.Properties = props;
-                components.Schemas[parameter.Name] = schema;
-            }
-            else if (parameter.GenericTypeArguments.Length > 0)
-            {
-                foreach(var genArg in parameter.GenericTypeArguments)
-                {
-                    ExplodeParameter(genArg, components);
-                }
-                schema.Properties = ExplodeParameter(parameter.BaseType, components).Properties;
-                schema.Type = "object";
+                components.Schemas[name] = schema;
             }
             else
             {
