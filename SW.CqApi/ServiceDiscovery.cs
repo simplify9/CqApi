@@ -92,6 +92,11 @@ namespace SW.CqApi
 
         }
 
+        public IEnumerable<string> GetRoles()
+        {
+            return resourceHandlers.GetRoles();
+        }
+
         public string GetOpenApiDocument()
         {
 
@@ -102,7 +107,6 @@ namespace SW.CqApi
                         i + 1 == keysArr.Length - 1 ? $"{keysArr[i]} and " :
                         $"{keysArr[i]},";
 
-            var roles = new List<string>();
             var components = new OpenApiComponents();
             var document = new OpenApiDocument
             {
@@ -119,7 +123,6 @@ namespace SW.CqApi
                 Paths = new OpenApiPaths(),
                 Components = components,
             };
-
             foreach (var res in resourceHandlers)
             {
                 var pathItem = new OpenApiPathItem();
@@ -133,7 +136,6 @@ namespace SW.CqApi
                 pathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
                 foreach (var handler in res.Value)
                 {
-                    roles.Add( $"{res.Key}.{handler.Value.HandlerType.Name}");
                     var interfaceType = handler.Value.NormalizedInterfaceType;
                     var apiOperation = HandlerTypeMetadata.Handlers[interfaceType].OpenApiOperation.Clone();
                     apiOperation.Tags.Add(tag);
@@ -194,9 +196,10 @@ namespace SW.CqApi
                 }
             }
 
-            document.Components = components.AddSecurity(roles);
+            document.Components = components.AddSecurity(resourceHandlers.GetRoles());
             return document.Serialize(OpenApiSpecVersion.OpenApi2_0, OpenApiFormat.Json);
         }
+
 
         void initializePath(OpenApiDocument document, string path)
         {

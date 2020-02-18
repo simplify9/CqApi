@@ -17,6 +17,7 @@ namespace SW.CqApi.SampleModel
         {
             return typeof(T);
         }
+        public T inner { get; set; }
     }
 
     public class CarDto

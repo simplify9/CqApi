@@ -32,6 +32,13 @@ namespace SW.CqApi
             serviceDiscovery = serviceProvider.GetService<ServiceDiscovery>();
         }
 
+        [HttpGet("_roles")]
+        public ActionResult<IEnumerable<string>> GetRoles()
+        {
+            var sd = serviceProvider.GetService<ServiceDiscovery>();
+            return Ok(sd.GetRoles());
+        }
+
         [HttpGet("swagger.json")]
         public ActionResult<string> GetOpenApiDocument()
         {
