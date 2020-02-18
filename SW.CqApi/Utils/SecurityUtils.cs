@@ -8,7 +8,7 @@ namespace SW.CqApi.Utils
 {
     public static class SecurityUtils
     {
-        public static OpenApiComponents AddSecurity(this OpenApiComponents components, List<string> roles)
+        public static OpenApiComponents AddSecurity(this OpenApiComponents components, IEnumerable<string> roles)
         {
             components.SecuritySchemes.Add("oauth", new OpenApiSecurityScheme
             {

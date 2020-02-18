@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
 
+    [Protect(RequireRole = true)]
     [Returns(Type = typeof(SearchyResponse<CarDto>), StatusCode = 200, Description = "lookup == false")]
     public class Search : ISearchyHandler
     {
