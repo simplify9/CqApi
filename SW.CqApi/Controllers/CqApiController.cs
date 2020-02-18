@@ -33,10 +33,10 @@ namespace SW.CqApi
         }
 
         [HttpGet("_roles")]
-        public ActionResult<IEnumerable<string>> GetRoles()
+        public ActionResult<IDictionary<string, string>> GetRoles()
         {
             var sd = serviceProvider.GetService<ServiceDiscovery>();
-            return Ok(sd.GetRoles());
+            return Ok(sd.GetRoles().OrderBy(e => e).ToDictionary(k => k, v=> v));
         }
 
         [HttpGet("swagger.json")]
