@@ -39,6 +39,12 @@ namespace SW.CqApi
             return Ok(sd.GetRoles().OrderBy(e => e).ToDictionary(k => k, v=> v));
         }
 
+        [HttpGet("_roles/{role}")]
+        public ActionResult<string> GetRole(string role)
+        {
+            return role;
+        }
+
         [HttpGet("swagger.json")]
         public ActionResult<string> GetOpenApiDocument()
         {
