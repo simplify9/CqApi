@@ -11,13 +11,14 @@ namespace SW.CqApi.SampleModel
         public int? Age { get; set; }
     }
 
-    public class GenericTest<T>
+    public class GenericTest<T1, T2>
     {
         public Type GetT()
         {
-            return typeof(T);
+            return typeof(T1);
         }
-        public T inner { get; set; }
+        public T1 inner { get; set; }
+        public List<T2> inner2 { get; set; }
     }
 
     public class CarDto
@@ -28,7 +29,7 @@ namespace SW.CqApi.SampleModel
         public string Brand { get; set; }
         public int[] OwnerIds { get; set; }
         public List<CarOwner> PreviousOwners { get; set; }
-        public GenericTest<int> genericTest { get; set; }
+        public GenericTest<int, string> GenericTest { get; set; }
         public CarOwner CarOwner { get; set; }
         public IDictionary<string, IEnumerable<string>> testDictionary { get; set; }
     }

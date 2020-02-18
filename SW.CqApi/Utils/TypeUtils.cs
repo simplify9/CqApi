@@ -22,7 +22,12 @@ namespace SW.CqApi.Utils
             string name = $"{split[0]}<";
             for(byte i = 0; i < genType.GenericTypeArguments.Length; i++)
             {
-                name += (genType.GenericTypeArguments[i].GenericTypeArguments.Length > 0? genType.GenericTypeArguments[i].GetGenericName() : genType.GenericTypeArguments[i].Name);
+                name += (
+                    genType.GenericTypeArguments[i].GenericTypeArguments.Length > 0? 
+                    genType.GenericTypeArguments[i].GetGenericName() : 
+                    genType.GenericTypeArguments[i].Name
+                );
+
                 if(i == genType.GenericTypeArguments.Length - 1) name += ">";
                 else name += ",";
             }
@@ -46,9 +51,9 @@ namespace SW.CqApi.Utils
             }
 
 
-            if (components.Schemas.ContainsKey(parameter.Name))
+            if (components.Schemas.ContainsKey(name))
             {
-                return components.Schemas[parameter.Name];
+                return components.Schemas[name];
             }
             else if (Nullable.GetUnderlyingType(parameter) != null)
             {
