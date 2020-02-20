@@ -149,7 +149,7 @@ namespace SW.CqApi
                     apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method, returns, components, interfaceType.Name);
 
                     if (roles.Contains($"{res.Key}.{handler.Value.HandlerType.Name.ToLower()}")){
-                        apiOperation.AddSecurity($"{res.Key}.{handler.Value.HandlerType.Name.ToLower()}");
+                        apiOperation.AddSecurity($"{res.Key}.{handler.Value.HandlerType.Name.ToLower()}", components);
                     }
 
                     if (handler.Key == "get")
