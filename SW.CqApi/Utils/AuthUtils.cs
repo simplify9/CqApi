@@ -14,19 +14,33 @@ namespace SW.CqApi.Utils
             List<string> roles = new List<string>();
             foreach (var res in resourceHandlers)
             {
+                bool secured = false;
                 var key = res.Key.ToLower();
-                roles.Add( $"{key}.*");
                 foreach(var handler in res.Value)
                 {
                     var protect = handler.Value.HandlerType.GetCustomAttribute<ProtectAttribute>();
                     if(protect != null && protect.RequireRole)
                     {
+                        secured = true;
                         string name = handler.Value.HandlerType.Name.ToLower();
                         roles.Add( $"{key}.{name}");
                     }
                 }
+                if(secured) roles.Add( $"{key}.*");
             }
             return roles;
+        }
+
+        public static void AddSecurity(this OpenApiOperation apiOperation, string role, OpenApiComponents components)
+        {
+            apiOperation.Security = new List<OpenApiSecurityRequirement>();
+            var security = new OpenApiSecurityRequirement();
+            var dict = new Dictionary<string, string>();
+            dict.Add(role, "");
+            var scheme = components.SecuritySchemes["oauth"];
+            security.Add(scheme, new List<string> { role });
+
+            apiOperation.Security.Add(security);
         }
     }
 }
