@@ -30,5 +30,33 @@ namespace SW.CqApi.Utils
             }
             return roles;
         }
+
+        public static void AddSecurity(this OpenApiOperation apiOperation, string role)
+        {
+            apiOperation.Security = new List<OpenApiSecurityRequirement>();
+            var security = new OpenApiSecurityRequirement();
+            var dict = new Dictionary<string, string>();
+            dict.Add(role, "");
+            var scheme = new OpenApiSecurityScheme
+            {
+                Name = "Security",
+                Type = SecuritySchemeType.OAuth2,
+                In = ParameterLocation.Cookie,
+                OpenIdConnectUrl = new Uri("https://www.url.com"),
+                Scheme = "scheme",
+                Flows = new OpenApiOAuthFlows
+                {
+                    Implicit = new OpenApiOAuthFlow
+                    {
+                        AuthorizationUrl = new Uri("https://www.url.com"),
+                        TokenUrl = new Uri("https://www.url.com"),
+                        Scopes = dict
+                    }
+                }
+            };
+            security.Add(scheme, new List<string> { role });
+
+            apiOperation.Security.Add(security);
+        }
     }
 }

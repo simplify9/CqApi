@@ -120,9 +120,12 @@ namespace SW.CqApi
                 {
                     //new OpenApiServer { Url = "http://petstore.swagger.io/api" }
                 },
+                
                 Paths = new OpenApiPaths(),
                 Components = components,
             };
+            var roles = resourceHandlers.GetRoles();
+            document.Components = components.AddSecurity(roles);
             foreach (var res in resourceHandlers)
             {
                 var pathItem = new OpenApiPathItem();
@@ -136,11 +139,19 @@ namespace SW.CqApi
                 pathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
                 foreach (var handler in res.Value)
                 {
+
+
+
                     var interfaceType = handler.Value.NormalizedInterfaceType;
                     var apiOperation = HandlerTypeMetadata.Handlers[interfaceType].OpenApiOperation.Clone();
                     apiOperation.Tags.Add(tag);
                     var returns = handler.Value.HandlerType.GetCustomAttributes<ReturnsAttribute>();
                     apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method, returns, components, interfaceType.Name);
+
+                    if (roles.Contains($"{res.Key}.{handler.Value.HandlerType.Name.ToLower()}")){
+                        apiOperation.AddSecurity($"{res.Key}.{handler.Value.HandlerType.Name.ToLower()}");
+                    }
+
                     if (handler.Key == "get")
                     {
                         initializePath(document, res.Key);
@@ -196,7 +207,6 @@ namespace SW.CqApi
                 }
             }
 
-            document.Components = components.AddSecurity(resourceHandlers.GetRoles());
             return document.Serialize(OpenApiSpecVersion.OpenApi2_0, OpenApiFormat.Json);
         }
 
