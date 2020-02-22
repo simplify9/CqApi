@@ -19,30 +19,18 @@ namespace SW.CqApi
         {
             this.httpContextAccessor = httpContextAccessor;
             correlationId = Guid.NewGuid().ToString("N");
-        }
+            var httpContext = httpContextAccessor.HttpContext;
+            if (httpContext == null) return;
 
-        public ClaimsPrincipal User
-        {
-            get
+            if (httpContext.User.Identity.IsAuthenticated)
             {
-                var httpContext = httpContextAccessor.HttpContext;
-
-                if (httpContext == null)
-                    return null;
-
-                //if (!httpContext.Request.Headers.TryGetValue("request-user-token", out var rawToken) || string.IsNullOrEmpty(rawToken.First()))
-                    return httpContext.User;
-
-                //var tokenHandler = new JwtSecurityTokenHandler();
-                //var token = tokenHandler.ReadJwtToken(rawToken.First());
-
-                //var claimsIdentity = new ClaimsIdentity(token.Claims, "jwt");
-  
-                //return new ClaimsPrincipal(claimsIdentity);
+                User = httpContext.User;
+                IsValid = true;
             }
         }
 
-        //=> httpContextAccessor.HttpContext?.User;
+        public ClaimsPrincipal User { get; }
+        public bool IsValid { get; }
 
         public IReadOnlyCollection<RequestValue> Values
         {
@@ -68,8 +56,6 @@ namespace SW.CqApi
                 return vals;
             }
         }
-
-        public bool IsValid => httpContextAccessor.HttpContext == null ? false : true;
 
         public string CorrelationId
         {
