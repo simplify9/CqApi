@@ -10,7 +10,13 @@ namespace SW.CqApi
     public static class IServiceCollectionExtensions
     {
 
-        public static IServiceCollection AddCqApi(this IServiceCollection services, Action<CqApiOptions> configure = null,  params Assembly[] assemblies)
+        public static IServiceCollection AddCqApi(this IServiceCollection services, params Assembly[] assemblies)
+        {
+            return services.AddCqApi(null, assemblies);
+        }
+
+
+        public static IServiceCollection AddCqApi(this IServiceCollection services, Action<CqApiOptions> configure, params Assembly[] assemblies)
         {
 
             var cqApiOptions = new CqApiOptions();
@@ -40,7 +46,7 @@ namespace SW.CqApi
                 options.ConstraintMap.Add("cqapiPrefix", typeof(CqapiPrefixRouteConstraint));
             });
 
-            return services; 
+            return services;
         }
     }
 }
