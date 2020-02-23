@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SW.CqApi.Utils
 {
-    public static class CustomAttributeUtils
+    internal static class CustomAttributeUtils
     {
         public static OpenApiResponses ToOpenApiResponses(this IEnumerable<ReturnsAttribute> attributes, OpenApiComponents components)
         {

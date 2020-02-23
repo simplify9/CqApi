@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using System.Linq;
 
 namespace SW.CqApi.Utils
 {
@@ -29,6 +30,27 @@ namespace SW.CqApi.Utils
                 if(secured) roles.Add( $"{key}.*");
             }
             return roles;
+        }
+        public static OpenApiComponents AddSecurity(this OpenApiComponents components, IEnumerable<string> roles)
+        {
+            components.SecuritySchemes.Add("oauth", new OpenApiSecurityScheme
+            {
+                Scheme = "https",
+                OpenIdConnectUrl = new Uri("https://www.url.com"),
+                Type = SecuritySchemeType.OAuth2,
+                In = ParameterLocation.Header,
+                Name = "oauth2",
+                Flows = new OpenApiOAuthFlows
+                {
+                    Implicit = new OpenApiOAuthFlow
+                    {
+                        AuthorizationUrl = new Uri("https://www.url.com"),
+                        TokenUrl = new Uri("https://www.url.com"),
+                        Scopes = roles.ToDictionary(x => $"Used to {x.Split('.')[1]} {x.Split('.')[0]}"),
+                    }
+                }
+            });
+            return components;
         }
 
         public static void AddSecurity(this OpenApiOperation apiOperation, string role, OpenApiComponents components)

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace SW.CqApi.Utils
 {
-    public static class DefaultUtils
+    internal static class DefaultUtils
     {
         public static OpenApiResponses GetDefaultResponses(this OpenApiResponses baseResponses, MethodInfo info, string InterfaceType)
         {

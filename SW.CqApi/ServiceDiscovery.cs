@@ -167,6 +167,14 @@ namespace SW.CqApi
                         document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, apiOperation);
                     }
 
+                    else if (handler.Key.StartsWith("get/"))
+                    {
+                        var path = $"{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
+                        initializePath(document, path);
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
+                        document.Paths[path].Operations.Add(OperationType.Get, apiOperation);
+                    }
+
                     else if (handler.Key == "post")
                     {
 

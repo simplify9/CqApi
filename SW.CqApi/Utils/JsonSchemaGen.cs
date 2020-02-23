@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace SW.CqApi.Utils
 {
-    public static class JsonSchemaGen
+    internal static class JsonSchemaGen
     {
         public static JsonSchema GetJsonType(this Type t)
         {

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace SW.CqApi.Utils
 {
-    public static class TypeUtils
+    internal static class TypeUtils
     {
         private static OpenApiSchema GetPrimtiveSchema(this Type parameter)
         {

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace SW.CqApi.Utils
 {
-    public static class OpenApiUtils
+    internal static class OpenApiUtils
     {
         public static OpenApiOperation Clone(this OpenApiOperation baseApiOperation)
         {
