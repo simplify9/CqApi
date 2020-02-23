@@ -11,11 +11,6 @@ namespace SW.CqApi
 {
     internal static class IServiceProviderExtensions
     {
-        //static IRequestContext GetRequestContext(this IServiceProvider serviceProvider)
-        //{
-        //    return serviceProvider.GetServices<IRequestContext>().Where(rc => rc.IsValid).SingleOrDefault();
-        //}
-
         public static HandlerInstance GetHandlerInstance(this IServiceProvider serviceProvider, HandlerInfo handlerInfo)
         {
             var handlerInstance = new HandlerInstance
@@ -30,13 +25,9 @@ namespace SW.CqApi
 
             if (handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>() is ProtectAttribute protectAttribute)
             {
-                var requestContext = serviceProvider.GetService<RequestContextManager>().Current;
+                var requestContext = serviceProvider.GetRequiredService<RequestContextManager>().Current;
 
                 if (requestContext is null)
-
-                    //throw new SWException("Could not find a valid request context service.");
-
-                //if (!requestContext.User.Identity.IsAuthenticated)
 
                     throw new CqApiUnauthorizedException();
                 
@@ -55,7 +46,6 @@ namespace SW.CqApi
             }
 
             return handlerInstance;
-
         }
 
     }

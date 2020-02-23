@@ -19,18 +19,35 @@ namespace SW.CqApi
         {
             this.httpContextAccessor = httpContextAccessor;
             correlationId = Guid.NewGuid().ToString("N");
-            var httpContext = httpContextAccessor.HttpContext;
-            if (httpContext == null) return;
+        }
 
-            if (httpContext.User.Identity.IsAuthenticated)
+        public ClaimsPrincipal User
+        {
+            get
             {
-                User = httpContext.User;
-                IsValid = true;
+                var httpContext = httpContextAccessor.HttpContext;
+                if (httpContext == null) return null;
+                if (httpContext.User.Identity.IsAuthenticated)
+                {
+                    return httpContext.User;
+                }
+                return null;
             }
         }
 
-        public ClaimsPrincipal User { get; }
-        public bool IsValid { get; }
+        public bool IsValid
+        {
+            get
+            {
+                var httpContext = httpContextAccessor.HttpContext;
+                if (httpContext == null) return false;
+                if (httpContext.User.Identity.IsAuthenticated)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
 
         public IReadOnlyCollection<RequestValue> Values
         {
