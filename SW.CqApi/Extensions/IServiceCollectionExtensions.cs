@@ -12,6 +12,7 @@ namespace SW.CqApi
 
         public static IServiceCollection AddCqApi(this IServiceCollection services, params Assembly[] assemblies)
         {
+            if (assemblies.Length == 0) assemblies = new Assembly[] { Assembly.GetCallingAssembly() };
             return services.AddCqApi(null, assemblies);
         }
 
