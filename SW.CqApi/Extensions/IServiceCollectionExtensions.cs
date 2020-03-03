@@ -1,6 +1,7 @@
 ﻿
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using SW.CqApi.AuthOptions;
 using SW.PrimitiveTypes;
 using System;
 using System.Reflection;
@@ -12,9 +13,9 @@ namespace SW.CqApi
 
         public static IServiceCollection AddCqApi(this IServiceCollection services, params Assembly[] assemblies)
         {
+            if (assemblies.Length == 0) assemblies = new Assembly[] { Assembly.GetCallingAssembly() };
             return services.AddCqApi(null, assemblies);
         }
-
 
         public static IServiceCollection AddCqApi(this IServiceCollection services, Action<CqApiOptions> configure, params Assembly[] assemblies)
         {

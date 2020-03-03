@@ -32,9 +32,11 @@ namespace SW.CqApi
 
         //private readonly ILogger<ServiceDiscovery> logger;
         private readonly IDictionary<string, IDictionary<string, HandlerInfo>> resourceHandlers = new Dictionary<string, IDictionary<string, HandlerInfo>>(StringComparer.OrdinalIgnoreCase);
+        private readonly CqApiOptions options;
 
-        public ServiceDiscovery(IServiceProvider serviceProvider, ILogger<ServiceDiscovery> logger)
+        public ServiceDiscovery(IServiceProvider serviceProvider, ILogger<ServiceDiscovery> logger, CqApiOptions options)
         {
+            this.options = options;
             using (var scope = serviceProvider.CreateScope())
             {
                 var registeredHandlers = scope.ServiceProvider.GetServices<IHandler>();
@@ -100,6 +102,8 @@ namespace SW.CqApi
         public string GetOpenApiDocument()
         {
 
+            string apiPrefix = "/cqapi";
+
             var desc = $"This API includes ways to manipulate ";
             var keysArr = resourceHandlers.Keys.ToArray<string>();
             for (byte i = 0; i < keysArr.Length; i++)
@@ -113,7 +117,7 @@ namespace SW.CqApi
                 Info = new OpenApiInfo
                 {
                     Version = "1.0.0",
-                    Title = "Open API Document",
+                    Title = options.ApplicationName,
                     Description = desc
                 },
                 Servers = new List<OpenApiServer>
@@ -125,14 +129,18 @@ namespace SW.CqApi
                 Components = components,
             };
             var roles = resourceHandlers.GetRoles();
-            document.Components = components.AddSecurity(roles);
+            document.Components = components.AddSecurity(roles, options.AuthOptions);
             foreach (var res in resourceHandlers)
             {
+                string description = options.ResourceDefinitions.ContainsKey(res.Key) ?
+                                     options.ResourceDefinitions[res.Key] : 
+                                     $"Commands and Queries related to {res.Key}";
+
                 var pathItem = new OpenApiPathItem();
                 document.Paths.Add(res.Key, pathItem);
                 var tag = new OpenApiTag {
                     Name = res.Key,
-                    Description = $"Commands and Queries related to {res.Key}"
+                    Description = description
                 };
                 document.Tags.Add(tag);
 
@@ -154,22 +162,23 @@ namespace SW.CqApi
 
                     if (handler.Key == "get")
                     {
-                        initializePath(document, res.Key);
+                        string path = $"{apiPrefix}/{res.Key}";
+                        initializePath(document, path);
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components);
-                        document.Paths[res.Key].Operations.Add(OperationType.Get, apiOperation);
+                        document.Paths[path].Operations.Add(OperationType.Get, apiOperation);
                     }
 
                     else if (handler.Key == "get/key")
                     {
-
-                        initializePath(document, $"{res.Key}/{{key}}");
+                        string path = $"{apiPrefix}/{res.Key}/{{key}}";
+                        initializePath(document, path);
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
-                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Get, apiOperation);
+                        document.Paths[path].Operations.Add(OperationType.Get, apiOperation);
                     }
 
                     else if (handler.Key.StartsWith("get/"))
                     {
-                        var path = $"{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
+                        string path = $"{apiPrefix}/{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components, true);
                         document.Paths[path].Operations.Add(OperationType.Get, apiOperation);
@@ -177,41 +186,39 @@ namespace SW.CqApi
 
                     else if (handler.Key == "post")
                     {
-
-                        initializePath(document, res.Key);
+                        string path = $"{apiPrefix}/{res.Key}";
+                        initializePath(document, path);
                         apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components);
-                        document.Paths[res.Key].Operations.Add(OperationType.Post, apiOperation);
+                        document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
                     else if (handler.Key == "post/key")
                     {
+                        string path = $"{apiPrefix}/{res.Key}/{{key}}";
 
-                        initializePath(document, $"{res.Key}/{{key}}");
+                        initializePath(document, path );
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
                         apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
-                        document.Paths[$"{res.Key}/{{key}}"].Operations.Add(OperationType.Post, apiOperation);
+                        document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
                     else if (handler.Key.StartsWith("post/key"))
                     {
-                        var path = $"{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
+                        string path = $"{apiPrefix}/{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, true);
                         apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
 
-
                     else if (handler.Key.StartsWith("post/"))
                     {
 
-                        var path = $"{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
+                        string path = $"{apiPrefix}/{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
                         apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, true);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
-
-
                 }
             }
 
