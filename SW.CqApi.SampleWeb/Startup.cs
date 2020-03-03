@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using SW.CqApi.AuthOptions;
 
 namespace SW.CqApi.SampleWeb
 {
@@ -36,7 +37,23 @@ namespace SW.CqApi.SampleWeb
                 config.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
 
-            services.AddCqApi();
+            services
+                .AddCqApi(config =>
+                {
+                    config.ApplicationName = "Sample Project";
+                    config.AuthOptions = new CqApiAuthOptions
+                    {
+                        AuthTitle = "Authentication Scheme",
+                        AuthType = AuthType.OAuth2,
+                        AuthUrl = new Uri("https://www.authUrl.com"),
+                        TokenUrl = new Uri("https://www.tokenUrl.com"),
+                        In = ParameterLocation.Header,
+                    };
+                    config.ResourceDefinitions = new Dictionary<string, string>
+                    {
+                        ["Parcels"] =  "Parcel resources have to do with packages, etc.",
+                    };
+                });
             services.AddRazorPages();
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).

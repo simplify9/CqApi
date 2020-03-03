@@ -10,7 +10,7 @@ namespace SW.CqApi.AuthOptions
         OpenIdConnect = 1,
         ApiKey = 2,
         Http = 3,
-        Oauth2 = 4,
+        OAuth2 = 4,
     }
 
     public enum ParameterLocation
@@ -25,15 +25,16 @@ namespace SW.CqApi.AuthOptions
     { 
         public AuthType? AuthType { get; set; }
         public string AuthTitle { get; set; }
+        public string AuthScheme { get; set; }
         public Uri? TokenUrl { get; set; }
         public Uri? AuthUrl { get; set; }
         public Uri? RefreshUrl { get; set; }
         public Uri? OpenIdConnectUrl { get; set; }
         public ParameterLocation? In { get; set; }
-        public IEnumerable<string>? Roles { get; set; }
         public IDictionary<string, string>? RolesWithDescription { get; set; }
         public CqApiAuthOptions()
         {
+            RolesWithDescription = new Dictionary<string, string>();
         }
 
     }

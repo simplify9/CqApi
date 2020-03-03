@@ -7,11 +7,10 @@ namespace SW.CqApi
 {
     public class CqApiOptions
     {
-        public string ProjectName { get; set; }
+        public string ApplicationName { get; set; }
         public string Description { get; set; }
-        public CqApiAuthOptions AuthOptions {get; set;}
-
-
+        public IDictionary<string, string>? ResourceDefinitions { get; set; }
+        public CqApiAuthOptions AuthOptions { get; set; }
         public CqApiOptions()
         {
 
