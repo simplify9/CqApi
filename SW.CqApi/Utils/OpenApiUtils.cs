@@ -73,7 +73,7 @@ namespace SW.CqApi.Utils
                     openApiParams.Add(new OpenApiParameter
                     {
                         Name = parameter.Name,
-                        Required = !parameter.IsOptional,
+                        //Required = !parameter.IsOptional,
                         AllowEmptyValue = parameter.IsOptional,
                         In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
                         Schema = new OpenApiSchema
