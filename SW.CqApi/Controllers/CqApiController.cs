@@ -78,6 +78,7 @@ namespace SW.CqApi
             [FromQuery(Name = "sort")] string[] sorts,
             [FromQuery(Name = "size")] int pageSize,
             [FromQuery(Name = "page")] int pageIndex,
+            [FromQuery(Name = "search")] string searchPhrase,
             [FromQuery(Name = "count")] bool countRows,
             [FromQuery(Name = "lookup")] bool lookup)
         {
@@ -87,11 +88,11 @@ namespace SW.CqApi
 
             if (serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
 
-                return await ExecuteHandler(handlerInfo, searchyRequest, false, null, null, null);
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, null);
 
             else if (serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
 
-                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, null, token, null);
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, token, null);
 
             else
                 return NotFound();
