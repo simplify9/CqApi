@@ -71,16 +71,27 @@ namespace SW.CqApi
         }
 
         [HttpGet("{resourceName}/{token}")]
-        public async Task<IActionResult> GetWithToken(string resourceName, string token, [FromQuery(Name = "lookup")] bool lookup)
+        public async Task<IActionResult> GetWithToken(
+            string resourceName, 
+            string token, 
+            [FromQuery(Name = "filter")] string[] filters,
+            [FromQuery(Name = "sort")] string[] sorts,
+            [FromQuery(Name = "size")] int pageSize,
+            [FromQuery(Name = "page")] int pageIndex,
+            [FromQuery(Name = "count")] bool countRows,
+            [FromQuery(Name = "lookup")] bool lookup)
         {
+
+            var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
+            if (String.IsNullOrEmpty(searchyRequest.ToString())) searchyRequest = null;
 
             if (serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
 
-                return await ExecuteHandler(handlerInfo, null, false, null, null, null);
+                return await ExecuteHandler(handlerInfo, searchyRequest, false, null, null, null);
 
             else if (serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
 
-                return await ExecuteHandler(handlerInfo, null, lookup, null, token, null);
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, null, token, null);
 
             else
                 return NotFound();
