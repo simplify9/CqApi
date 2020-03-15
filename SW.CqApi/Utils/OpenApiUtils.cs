@@ -63,7 +63,7 @@ namespace SW.CqApi.Utils
                             In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
                             Schema = new OpenApiSchema
                             {
-                                Type = parameter.ParameterType.FullName
+                                Type = prop.Type
                             }
                         });
                     }

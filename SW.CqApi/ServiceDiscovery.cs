@@ -136,6 +136,8 @@ namespace SW.CqApi
                                      options.ResourceDefinitions[res.Key] : 
                                      $"Commands and Queries related to {res.Key}";
 
+
+
                 var pathItem = new OpenApiPathItem();
                 document.Paths.Add(res.Key, pathItem);
                 var tag = new OpenApiTag {
