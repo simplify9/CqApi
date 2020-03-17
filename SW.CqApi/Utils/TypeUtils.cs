@@ -40,6 +40,7 @@ namespace SW.CqApi.Utils
             var jsonifed = parameter.GetJsonType();
             string name = parameter.Name;
 
+
             if (parameter.GenericTypeArguments.Length > 0)
             {
                 foreach(var genArg in parameter.GenericTypeArguments)
@@ -54,6 +55,10 @@ namespace SW.CqApi.Utils
             if (components.Schemas.ContainsKey(name))
             {
                 return components.Schemas[name];
+            }
+            else if (!String.IsNullOrEmpty(parameter.GetDefaultSchema().Title))
+            {
+                return parameter.GetDefaultSchema();
             }
             else if (Nullable.GetUnderlyingType(parameter) != null)
             {

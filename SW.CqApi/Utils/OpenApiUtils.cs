@@ -61,10 +61,7 @@ namespace SW.CqApi.Utils
                             Required = !prop.Nullable,
                             AllowEmptyValue = !prop.Nullable,
                             In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
-                            Schema = new OpenApiSchema
-                            {
-                                Type = parameter.ParameterType.FullName
-                            }
+                            Schema = prop
                         });
                     }
                 }
@@ -76,10 +73,7 @@ namespace SW.CqApi.Utils
                         //Required = !parameter.IsOptional,
                         AllowEmptyValue = parameter.IsOptional,
                         In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
-                        Schema = new OpenApiSchema
-                        {
-                            Type = parameter.ParameterType.FullName
-                        }
+                        Schema = TypeUtils.ExplodeParameter(parameter.ParameterType, components)
                     });
                 }
             }

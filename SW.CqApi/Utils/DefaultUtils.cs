@@ -11,6 +11,45 @@ namespace SW.CqApi.Utils
 {
     internal static class DefaultUtils
     {
+        public static OpenApiSchema GetDefaultSchema(this Type type)
+        {
+            var schema = new OpenApiSchema();
+            var stringSchema = typeof(string).GetJsonType().GetOpenApiSchema();
+
+            if(type == typeof(SearchyRequest))
+            {
+                schema.Title = "Searchy Request";
+                schema.Properties.Add("filter", new OpenApiSchema {
+                    Type = "string",
+                    Nullable = true,
+                    Title = "filter",
+                });
+                schema.Properties.Add("sort", new OpenApiSchema
+                {
+                    Type = "string",
+                    Nullable = true,
+                    Title = "sort"
+                });
+                schema.Properties.Add("size", new OpenApiSchema { 
+                    Type = "string",
+                    Nullable = true,
+                    Title = "sort"
+                });
+                schema.Properties.Add("page", new OpenApiSchema { 
+                    Type = "string",
+                    Nullable = true,
+                    Title = "page"
+                });
+                schema.Properties.Add("count", new OpenApiSchema
+                {
+                    Type = "string",
+                    Nullable = true,
+                    Title = "count"
+                });
+            }
+
+            return schema;
+        }
         public static OpenApiResponses GetDefaultResponses(this OpenApiResponses baseResponses, MethodInfo info, string InterfaceType)
         {
             var parameters = info.GetParameters();

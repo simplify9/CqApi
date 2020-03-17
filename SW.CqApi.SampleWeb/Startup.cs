@@ -51,7 +51,7 @@ namespace SW.CqApi.SampleWeb
                     };
                     config.ResourceDefinitions = new Dictionary<string, string>
                     {
-                        ["Parcels"] =  "Parcel resources have to do with packages, etc.",
+                        ["parcels"] =  "Parcel resources have to do with packages, etc.",
                     };
                 });
             services.AddRazorPages();
