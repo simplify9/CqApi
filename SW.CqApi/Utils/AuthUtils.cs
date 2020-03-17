@@ -67,26 +67,10 @@ namespace SW.CqApi.Utils
         }
         public static OpenApiComponents AddSecurity(this OpenApiComponents components, IEnumerable<string> roles, AuthOptions.CqApiAuthOptions options)
         {
-            components.SecuritySchemes.Add("oauth", new OpenApiSecurityScheme
+            components.SecuritySchemes.Add("auth", new OpenApiSecurityScheme
             {
-                Scheme = options.AuthScheme?? "https",
-                OpenIdConnectUrl = options.OpenIdConnectUrl?? new Uri("https://www.url.com"),
-                Type = options.AuthType.HasValue? options.AuthType.ToSecuritySchemeType() : SecuritySchemeType.OAuth2,
-                In = options.In.HasValue? options.In.ToParameterLoc() : ParameterLocation.Header,
-                Name = options.AuthTitle?? "oauth2",
-                Flows = new OpenApiOAuthFlows
-                {
-                    Implicit = new OpenApiOAuthFlow
-                    {
-                        AuthorizationUrl = options.AuthUrl?? new Uri("https://www.url.com"),
-                        TokenUrl = options.TokenUrl?? new Uri("https://www.url.com"),
-                        Scopes = roles.ToDictionary(x => 
-                            options.RolesWithDescription.ContainsKey(x)? 
-                            options.RolesWithDescription[x] : 
-                            x.Contains("*")? $"Used for full access of {x.Split(".")[0]}": 
-                            $"Used to {x.Split('.')[1]} {x.Split('.')[0]}"),
-                    }
-                }
+                Scheme = "bearer",
+                Type = SecuritySchemeType.Http,
             });
             return components;
         }
@@ -95,10 +79,16 @@ namespace SW.CqApi.Utils
         {
             apiOperation.Security = new List<OpenApiSecurityRequirement>();
             var security = new OpenApiSecurityRequirement();
-            var dict = new Dictionary<string, string>();
-            dict.Add(role, "");
-            var scheme = components.SecuritySchemes["oauth"];
-            security.Add(scheme, new List<string> { role });
+            var scheme = new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "auth"
+                }
+            };
+;
+            security.Add(scheme, new List<string>());
 
             apiOperation.Security.Add(security);
         }
