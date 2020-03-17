@@ -9,6 +9,7 @@ namespace SW.CqApi
     {
         public string ApplicationName { get; set; }
         public string Description { get; set; }
+        public string Prefix { get; set; } = "cqapi";
         public IDictionary<string, string>? ResourceDefinitions { get; set; }
         public CqApiAuthOptions AuthOptions { get; set; }
         public CqApiOptions()

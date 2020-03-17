@@ -102,7 +102,7 @@ namespace SW.CqApi
         public string GetOpenApiDocument()
         {
 
-            string apiPrefix = "/cqapi";
+            string apiPrefix = $"/{options.Prefix}";
 
             var desc = $"This API includes ways to manipulate ";
             var keysArr = resourceHandlers.Keys.ToArray<string>();

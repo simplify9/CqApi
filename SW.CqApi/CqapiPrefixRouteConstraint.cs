@@ -11,15 +11,20 @@ namespace SW.CqApi
 {
     public class CqapiPrefixRouteConstraint : IRouteConstraint
     {
-        private readonly IConfiguration configuration;
+        private readonly CqApiOptions options;
+
+        public CqapiPrefixRouteConstraint(CqApiOptions options)
+        {
+            this.options = options;
+        }
 
 
 
         public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
         {
-            //var config = httpContext.RequestServices.GetService<IConfiguration>()["cqapi:prefix"];
+            var controllerPrefix = options.Prefix?? "cqapi";
             var prefix = values["prefix"].ToString();
-            if (prefix.ToLower() == "cqapi") return true;
+            if (prefix.ToLower() == controllerPrefix) return true;
             return false;
         }
     }
