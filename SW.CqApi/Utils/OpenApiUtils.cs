@@ -116,10 +116,6 @@ namespace SW.CqApi.Utils
                         }
                     }
                 },
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.RequestBody,
-                }
             };
 
             return requestBody;
