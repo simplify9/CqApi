@@ -15,6 +15,7 @@ using System.Security.Claims;
 using System.Text;
 
 using System.Threading.Tasks;
+using SW.HttpExtensions;
 
 namespace SW.CqApi.UnitTests
 {
@@ -42,14 +43,9 @@ namespace SW.CqApi.UnitTests
         [TestMethod]
         async public Task TestMethod1()
         {
-
             var httpClient = server.CreateClient();
-
-            httpClient.BaseAddress = new Uri(httpClient.BaseAddress, "cqapi/cars");
-
-            var apiClient = new Resources.Cars.ApiClient(httpClient);
-
-            await apiClient.Create(new Resources.Cars.CreateCommand { Owner = "samer" });  
+            var httpResponseMessage = await httpClient.PostAsync("cqapi/cars", new Resources.Cars.CreateCommand { Owner = "samer" });
+            httpResponseMessage.EnsureSuccessStatusCode();
 
         }
 
