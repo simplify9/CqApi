@@ -24,13 +24,23 @@ namespace SW.CqApi.AuthOptions
     public class CqApiAuthOptions
     { 
         public AuthType? AuthType { get; set; }
-        public string AuthTitle { get; set; }
+        /// <summary>
+        /// Name of the cookie, header or query parameter used.
+        /// </summary>
+        public string AuthName { get; set; }
+        /// <summary>
+        ///  The name of the HTTP Authorization scheme to be used in the Authorization
+        /// as defined in RFC7235.
+        /// </summary>
         public string AuthScheme { get; set; }
         public Uri? TokenUrl { get; set; }
         public Uri? AuthUrl { get; set; }
         public Uri? RefreshUrl { get; set; }
         public Uri? OpenIdConnectUrl { get; set; }
         public ParameterLocation? In { get; set; }
+        /// <summary>
+        /// Roles with their keys in here will have their description replaced with the value
+        /// </summary>
         public IDictionary<string, string>? RolesWithDescription { get; set; }
         public CqApiAuthOptions()
         {

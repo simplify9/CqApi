@@ -43,7 +43,7 @@ namespace SW.CqApi.SampleWeb
                     config.ApplicationName = "Sample Project";
                     config.AuthOptions = new CqApiAuthOptions
                     {
-                        AuthTitle = "Authentication Scheme",
+                        AuthName = "Authentication Scheme",
                         AuthType = AuthType.OAuth2,
                         AuthUrl = new Uri("https://www.authUrl.com"),
                         TokenUrl = new Uri("https://www.tokenUrl.com"),
