@@ -15,12 +15,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="SimplyWorks.HttpExtensions" Version="2020.1.31.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SW.CqApi.Client\SW.CqApi.Client.csproj" />
     <ProjectReference Include="..\SW.CqApi\SW.CqApi.csproj" />
   </ItemGroup>
 
