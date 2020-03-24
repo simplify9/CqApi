@@ -10,6 +10,7 @@ using SW.PrimitiveTypes;
 using Newtonsoft.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using System.Reflection;
 
 namespace SW.CqApi
 {
@@ -66,14 +67,14 @@ namespace SW.CqApi
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "get");
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
-            return ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, null);
+            return ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, GetFromQueryString(handlerInfo.Method));
 
         }
 
         [HttpGet("{resourceName}/{token}")]
         public async Task<IActionResult> GetWithToken(
-            string resourceName, 
-            string token, 
+            string resourceName,
+            string token,
             [FromQuery(Name = "filter")] string[] filters,
             [FromQuery(Name = "sort")] string[] sorts,
             [FromQuery(Name = "size")] int pageSize,
@@ -86,13 +87,18 @@ namespace SW.CqApi
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
             if (String.IsNullOrEmpty(searchyRequest.ToString())) searchyRequest = null;
 
-            if (serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
 
-                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, null);
+            if (serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
+            {
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, GetFromQueryString(handlerInfo.Method));
+
+            }
 
             else if (serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
+            {
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, token, GetFromQueryString(handlerInfo.Method));
+            }
 
-                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, token, null);
 
             else
                 return NotFound();
@@ -173,7 +179,8 @@ namespace SW.CqApi
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
             {
-                throw new NotImplementedException();
+                var result = await handlerInstance.Invoke(body);
+                return Ok(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
             {
@@ -253,10 +260,14 @@ namespace SW.CqApi
             }
         }
 
-        T GetFromQueryString<T>() where T : new()
+        object GetFromQueryString(MethodInfo info) 
         {
-            var obj = new T();
-            var properties = typeof(T).GetProperties();
+            var parameters = info.GetParameters();
+            if (parameters.Length == 0)
+                return null;
+
+            var obj = Activator.CreateInstance(parameters[0].ParameterType);
+            var properties = parameters[0].ParameterType.GetProperties();
             foreach (var property in properties)
             {
                 var valueAsString = Request.Query[property.Name].FirstOrDefault();
