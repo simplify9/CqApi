@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
+using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace SW.CqApi
 {
@@ -256,19 +257,28 @@ namespace SW.CqApi
 
         object GetFromQueryString(Type type)
         {
-            var obj = Activator.CreateInstance(type);
-            var properties = type.GetProperties();
-            foreach (var property in properties)
+            try
             {
-                var valueAsString = Request.Query[property.Name].FirstOrDefault();
-                var value = Object.ConvertValue(valueAsString, property.PropertyType);
+                var obj = Activator.CreateInstance(type);
+                var properties = type.GetProperties();
+                foreach (var property in properties)
+                {
+                    var valueAsString = Request.Query[property.Name].FirstOrDefault();
+                    var value = Object.ConvertValue(valueAsString, property.PropertyType);
 
-                if (value == null)
-                    continue;
+                    if (value == null)
+                        continue;
 
-                property.SetValue(obj, value, null);
+                    property.SetValue(obj, value, null);
+                }
+                return obj;
             }
-            return obj;
+            catch (Exception ex)
+            {
+                throw new SWException($"Error constructing type: '{type.Name}' from parameters.", ex);
+                
+            }
+
         }
 
     }
