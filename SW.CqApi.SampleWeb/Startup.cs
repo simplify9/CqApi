@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SW.CqApi.AuthOptions;
+using SW.CqApi.SampleModel;
 
 namespace SW.CqApi.SampleWeb
 {
@@ -41,15 +42,7 @@ namespace SW.CqApi.SampleWeb
                 .AddCqApi(config =>
                 {
                     config.ApplicationName = "Sample Project";
-                    config.AuthOptions = new CqApiAuthOptions
-                    {
-                        AuthName = "Authentication Scheme",
-                        AuthType = AuthType.OAuth2,
-                        AuthUrl = new Uri("https://www.authUrl.com"),
-                        TokenUrl = new Uri("https://www.tokenUrl.com"),
-                        In = ParameterLocation.Header,
-                    };
-                    config.ResourceDefinitions = new Dictionary<string, string>
+                    config.ResourceDescriptions = new Dictionary<string, string>
                     {
                         ["parcels"] =  "Parcel resources have to do with packages, etc.",
                     };

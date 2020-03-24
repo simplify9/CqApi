@@ -1,4 +1,5 @@
 ﻿using SW.CqApi.AuthOptions;
+using SW.CqApi.Options;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,11 +24,15 @@ namespace SW.CqApi
         /// <summary>
         /// Any resource with its key found here, will have its description replaced with the value
         /// </summary>
-        public IDictionary<string, string>? ResourceDefinitions { get; set; }
+        public IDictionary<string, string>? ResourceDescriptions { get; set; }
         /// <summary>
         /// Authentication settings
         /// </summary>
         public CqApiAuthOptions AuthOptions { get; set; }
+        /// <summary>
+        /// Maps for types, how they're sent through the API
+        /// </summary>
+        private TypeMaps Maps { get; }
         public CqApiOptions()
         {
 
