@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
+using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace SW.CqApi
 {
@@ -37,7 +38,7 @@ namespace SW.CqApi
         public ActionResult<IDictionary<string, string>> GetRoles()
         {
             var sd = serviceProvider.GetService<ServiceDiscovery>();
-            return Ok(sd.GetRoles().OrderBy(e => e).ToDictionary(k => k, v=> v));
+            return Ok(sd.GetRoles().OrderBy(e => e).ToDictionary(k => k, v => v));
         }
 
         [HttpGet("_roles/{role}")]
@@ -67,7 +68,7 @@ namespace SW.CqApi
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "get");
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
-            return ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, GetFromQueryString(handlerInfo.Method));
+            return ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, null);
 
         }
 
@@ -87,18 +88,11 @@ namespace SW.CqApi
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
             if (String.IsNullOrEmpty(searchyRequest.ToString())) searchyRequest = null;
 
-
             if (serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
-            {
-                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, GetFromQueryString(handlerInfo.Method));
-
-            }
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, null);
 
             else if (serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
-            {
-                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, token, GetFromQueryString(handlerInfo.Method));
-            }
-
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, token, null);
 
             else
                 return NotFound();
@@ -179,7 +173,8 @@ namespace SW.CqApi
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
             {
-                var result = await handlerInstance.Invoke(body);
+                var request = GetFromQueryString(handlerInfo.ArgumentTypes[0]);
+                var result = await handlerInstance.Invoke(request);
                 return Ok(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
@@ -260,25 +255,30 @@ namespace SW.CqApi
             }
         }
 
-        object GetFromQueryString(MethodInfo info) 
+        object GetFromQueryString(Type type)
         {
-            var parameters = info.GetParameters();
-            if (parameters.Length == 0)
-                return null;
-
-            var obj = Activator.CreateInstance(parameters[0].ParameterType);
-            var properties = parameters[0].ParameterType.GetProperties();
-            foreach (var property in properties)
+            try
             {
-                var valueAsString = Request.Query[property.Name].FirstOrDefault();
-                var value = Object.ConvertValue(valueAsString, property.PropertyType);
+                var obj = Activator.CreateInstance(type);
+                var properties = type.GetProperties();
+                foreach (var property in properties)
+                {
+                    var valueAsString = Request.Query[property.Name].FirstOrDefault();
+                    var value = Object.ConvertValue(valueAsString, property.PropertyType);
 
-                if (value == null)
-                    continue;
+                    if (value == null)
+                        continue;
 
-                property.SetValue(obj, value, null);
+                    property.SetValue(obj, value, null);
+                }
+                return obj;
             }
-            return obj;
+            catch (Exception ex)
+            {
+                throw new SWException($"Error constructing type: '{type.Name}' from parameters.", ex);
+                
+            }
+
         }
 
     }
