@@ -132,8 +132,8 @@ namespace SW.CqApi
             document.Components = components.AddSecurity(roles, options.AuthOptions);
             foreach (var res in resourceHandlers)
             {
-                string description = options.ResourceDefinitions.ContainsKey(res.Key) ?
-                                     options.ResourceDefinitions[res.Key] : 
+                string description = options.ResourceDescriptions.ContainsKey(res.Key) ?
+                                     options.ResourceDescriptions[res.Key] : 
                                      $"Commands and Queries related to {res.Key}";
 
 
