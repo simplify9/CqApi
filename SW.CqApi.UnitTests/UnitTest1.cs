@@ -16,6 +16,7 @@ using System.Text;
 
 using System.Threading.Tasks;
 using SW.HttpExtensions;
+using SW.CqApi.UnitTests.Resources.Cars;
 
 namespace SW.CqApi.UnitTests
 {
@@ -40,14 +41,81 @@ namespace SW.CqApi.UnitTests
             server.Dispose();
         }
 
+        /*
+         * Testing each handler
+         * The Gen refers to number of generic arguements 
+         * To distinguish the handlers
+        */
+
+
         [TestMethod]
-        async public Task TestMethod1()
+        async public Task TestCommandHandlerGen1()
         {
             var httpClient = server.CreateClient();
             var httpResponseMessage = await httpClient.PostAsync("cqapi/cars", new Resources.Cars.CreateCommand { Owner = "samer" });
             httpResponseMessage.EnsureSuccessStatusCode();
-
         }
+
+        [TestMethod]
+        async public Task TestQueryHandler()
+        {
+            var httpClient = server.CreateClient();
+            var httpResponseMessage = await httpClient.GetAsync("cqapi/cars");
+            httpResponseMessage.EnsureSuccessStatusCode();
+        }
+
+        [TestMethod]
+        async public Task TestQueryHandlerGen1()
+        {
+            var httpClient = server.CreateClient();
+            var httpResponseMessage = await httpClient.GetAsync("cqapi/cars?plate=12");
+            var rs = await httpResponseMessage.Content.ReadAsAsync<CarDto>();
+            Assert.AreEqual<int>(12, rs.Plate);
+        }
+
+        [TestMethod]
+        async public Task TestGetHandlerGen1()
+        {
+            var httpClient = server.CreateClient();
+            var httpResponseMessage = await httpClient.GetAsync("cqapi/cars/12");
+            var rs = await httpResponseMessage.Content.ReadAsAsync<int>();
+            Assert.AreEqual<int>(12, rs);
+        }
+
+        [TestMethod]
+        async public Task TestSearchyHandler()
+        {
+            var httpClient = server.CreateClient();
+            var httpResponseMessage = await httpClient.GetAsync("cqapi/cars/search?page=12");
+            var rs = await httpResponseMessage.Content.ReadAsStringAsync();
+            Assert.AreEqual<string>("page=12", rs);
+        }
+
+        [TestMethod]
+        async public Task TestCommandHandlerGen2()
+        {
+
+            var httpClient = server.CreateClient();
+            var httpResponseMessage = await httpClient.PostAsync("cqapi/cars/1", new CarDto { Plate = 2 });
+            var rs = await httpResponseMessage.Content.ReadAsAsync<int>();
+            Assert.AreEqual<int>(12, rs);
+        }
+
+        [TestMethod]
+        async public Task TestDeleteHandler()
+        {
+
+            var httpClient = server.CreateClient();
+            var httpResponseMessage = await httpClient.SendAsync(new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri("cqapi/cars/1"),
+            });
+            httpResponseMessage.EnsureSuccessStatusCode();
+        }
+
+        
+
 
 
 
