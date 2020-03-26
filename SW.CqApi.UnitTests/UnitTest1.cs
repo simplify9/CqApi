@@ -106,11 +106,7 @@ namespace SW.CqApi.UnitTests
         {
 
             var httpClient = server.CreateClient();
-            var httpResponseMessage = await httpClient.SendAsync(new HttpRequestMessage
-            {
-                Method = HttpMethod.Delete,
-                RequestUri = new Uri("cqapi/cars/1"),
-            });
+            var httpResponseMessage = await httpClient.DeleteAsync("cqapi/cars/1");
             httpResponseMessage.EnsureSuccessStatusCode();
         }
 
