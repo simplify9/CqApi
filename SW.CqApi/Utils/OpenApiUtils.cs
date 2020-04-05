@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Models;
+using SW.CqApi.Options;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,7 @@ namespace SW.CqApi.Utils
                 Summary = baseApiOperation.Summary
             };
         }
-        public static OpenApiResponses GetOpenApiResponses(MethodInfo methodInfo, IEnumerable<ReturnsAttribute> returnsAttributes, OpenApiComponents components, string InterfaceType)
+        public static OpenApiResponses GetOpenApiResponses(MethodInfo methodInfo, IEnumerable<ReturnsAttribute> returnsAttributes, OpenApiComponents components, string InterfaceType, TypeMaps maps)
         {
             //var methodInfo = handlerInfo.Method;
             var returnMediaType = new OpenApiMediaType
@@ -40,17 +41,17 @@ namespace SW.CqApi.Utils
             };
 
             var responses = returnsAttributes
-                .ToOpenApiResponses(components)
+                .ToOpenApiResponses(components, maps)
                 .GetDefaultResponses(methodInfo, InterfaceType);
             return responses;
         }
 
-        public static IList<OpenApiParameter> GetOpenApiParameters(IEnumerable<ParameterInfo> parameters, OpenApiComponents components, bool withKey = false)
+        public static IList<OpenApiParameter> GetOpenApiParameters(IEnumerable<ParameterInfo> parameters, OpenApiComponents components, TypeMaps maps, bool withKey = false)
         {
             var openApiParams = new List<OpenApiParameter>();
             foreach(var parameter in parameters)
             {
-                var schemaParam = TypeUtils.ExplodeParameter(parameter.ParameterType, components);
+                var schemaParam = TypeUtils.ExplodeParameter(parameter.ParameterType, components, maps);
                 if (schemaParam.Properties.Count > 0)
                 {
                     foreach(var prop in schemaParam.Properties.Values)
@@ -73,7 +74,7 @@ namespace SW.CqApi.Utils
                         //Required = !parameter.IsOptional,
                         AllowEmptyValue = parameter.IsOptional,
                         In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
-                        Schema = TypeUtils.ExplodeParameter(parameter.ParameterType, components)
+                        Schema = TypeUtils.ExplodeParameter(parameter.ParameterType, components, maps)
                     });
                 }
             }
@@ -81,7 +82,7 @@ namespace SW.CqApi.Utils
         }
 
 
-        public static OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo, OpenApiComponents components, bool withKey = false)
+        public static OpenApiRequestBody GetOpenApiRequestBody(MethodInfo methodInfo, OpenApiComponents components, TypeMaps maps, bool withKey = false)
         {
 
             var conentMediaType  = new OpenApiMediaType
@@ -98,7 +99,7 @@ namespace SW.CqApi.Utils
 
             foreach(var param in relevantParameters)
             {
-                paramterDict[param.Name] = TypeUtils.ExplodeParameter(param.ParameterType, components);
+                paramterDict[param.Name] = TypeUtils.ExplodeParameter(param.ParameterType, components, maps);
             }
             
             var requestBody = new OpenApiRequestBody

@@ -46,6 +46,7 @@ namespace SW.CqApi.SampleWeb
                     {
                         ["parcels"] =  "Parcel resources have to do with packages, etc.",
                     };
+                    config.Maps.AddMap<DateTime, string>("12/3/2006");
                 });
             services.AddRazorPages();
 
