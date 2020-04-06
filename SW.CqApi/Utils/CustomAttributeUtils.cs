@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Models;
+using SW.CqApi.Options;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
@@ -8,12 +9,12 @@ namespace SW.CqApi.Utils
 {
     internal static class CustomAttributeUtils
     {
-        public static OpenApiResponses ToOpenApiResponses(this IEnumerable<ReturnsAttribute> attributes, OpenApiComponents components)
+        public static OpenApiResponses ToOpenApiResponses(this IEnumerable<ReturnsAttribute> attributes, OpenApiComponents components, TypeMaps maps)
         {
             var responses = new OpenApiResponses();
             foreach(var attribute in attributes)
             {
-                OpenApiSchema schema = TypeUtils.ExplodeParameter(attribute.Type, components);
+                OpenApiSchema schema = TypeUtils.ExplodeParameter(attribute.Type, components, maps);
                 var mediaType = new OpenApiMediaType
                 {
                     Schema = schema

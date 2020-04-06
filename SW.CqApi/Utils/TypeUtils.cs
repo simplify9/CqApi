@@ -1,5 +1,7 @@
 ﻿using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using SW.CqApi.Extensions;
+using SW.CqApi.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,31 +12,7 @@ namespace SW.CqApi.Utils
 {
     internal static class TypeUtils
     {
-        private static OpenApiSchema GetPrimtiveSchema(this Type parameter)
-        {
-            OpenApiSchema schema = parameter.GetJsonType().GetOpenApiSchema();
-            return schema;
-        }
-
-        public static string GetGenericName(this Type genType)
-        {
-            string[] split = genType.Name.Split('`');
-            string name = $"{split[0]}<";
-            for(byte i = 0; i < genType.GenericTypeArguments.Length; i++)
-            {
-                name += (
-                    genType.GenericTypeArguments[i].GenericTypeArguments.Length > 0? 
-                    genType.GenericTypeArguments[i].GetGenericName() : 
-                    genType.GenericTypeArguments[i].Name
-                );
-
-                if(i == genType.GenericTypeArguments.Length - 1) name += ">";
-                else name += ",";
-            }
-            return name;
-        }
-
-        public static OpenApiSchema ExplodeParameter(Type parameter, OpenApiComponents components)
+        public static OpenApiSchema ExplodeParameter(Type parameter, OpenApiComponents components, TypeMaps maps)
         {
             OpenApiSchema schema = new OpenApiSchema();
             var jsonifed = parameter.GetJsonType();
@@ -45,14 +23,20 @@ namespace SW.CqApi.Utils
             {
                 foreach(var genArg in parameter.GenericTypeArguments)
                 {
-                    ExplodeParameter(genArg, components);
+                    ExplodeParameter(genArg, components, maps);
                 }
                 schema.Type = "object";
                 name = parameter.GetGenericName();
             }
 
-
-            if (components.Schemas.ContainsKey(name))
+            if (maps.ContainsMap(parameter)){
+                var map = maps.GetMap(parameter);
+                schema = ExplodeParameter(map.Type, components, maps);
+                schema.Example = map.OpenApiExample;
+                components.Schemas[name] = schema;
+                return schema;
+            }
+            else if (components.Schemas.ContainsKey(name))
             {
                 return components.Schemas[name];
             }
@@ -62,7 +46,7 @@ namespace SW.CqApi.Utils
             }
             else if (Nullable.GetUnderlyingType(parameter) != null)
             {
-                schema =  ExplodeParameter(Nullable.GetUnderlyingType(parameter), components);
+                schema =  ExplodeParameter(Nullable.GetUnderlyingType(parameter), components, maps);
                 schema.Nullable = true;
             }
             else if (parameter.IsEnum)
@@ -79,13 +63,13 @@ namespace SW.CqApi.Utils
             else if(parameter.IsPrimitive || IsNumericType(parameter) || parameter == typeof(string))
             {
                 schema.Type = jsonifed.Type.ToJsonType();
-                schema.Example = GetExample(parameter);
+                schema.Example = GetExample(parameter, maps);
             }
             else if (jsonifed.Items != null)
             {
                 schema.Type = jsonifed.Type.ToJsonType();
                 schema.Items = jsonifed.Items[0].GetOpenApiSchema();
-                schema.Example = GetExample(parameter);
+                schema.Example = GetExample(parameter, maps);
             }
             else if(parameter.GetProperties().Length != 0 && !IsNumericType(parameter))
             {
@@ -93,7 +77,7 @@ namespace SW.CqApi.Utils
                 foreach(var prop in parameter.GetProperties())
                 {
                     if (prop.PropertyType == parameter) continue;
-                    props[prop.Name] = ExplodeParameter(prop.PropertyType, components);
+                    props[prop.Name] = ExplodeParameter(prop.PropertyType, components, maps);
                 }
 
                 schema.Properties = props;
@@ -101,7 +85,7 @@ namespace SW.CqApi.Utils
             }
             else
             {
-                schema.Type = "undefined";
+                schema.Type = "Object";
             }
             return schema;
 
@@ -127,9 +111,13 @@ namespace SW.CqApi.Utils
                     return false;
             }
         }
-        static public IOpenApiAny GetExample(Type parameter)
+        static public IOpenApiAny GetExample(Type parameter, TypeMaps maps)
         {
-            if (parameter == typeof(string))
+            if (maps.ContainsMap(parameter))
+            {
+                return maps.GetMap(parameter).OpenApiExample;
+            }
+            else if (parameter == typeof(string))
             {
                 int randomNum = new Random().Next() % 3;
                 var words = new string[] { "foo", "bar", "baz" };
@@ -152,14 +140,18 @@ namespace SW.CqApi.Utils
                 for(int _ = 0; _ < randomNum + 1; _++)
                 {
                     var innerType = parameter.GetElementType() ?? parameter.GenericTypeArguments[0];
-                    exampleArr.Add(GetExample(innerType));
+                    exampleArr.Add(GetExample(innerType, maps));
                 }
 
                 return exampleArr;
             }
             else
             {
-                return new OpenApiNull();
+                if (parameter.GetProperties().Length == 0) return new OpenApiNull();
+                var example = new OpenApiObject();
+                foreach(var prop in parameter.GetProperties())
+                    example.Add(prop.Name, GetExample(prop.PropertyType, maps));
+                return example;
             }
 
         }

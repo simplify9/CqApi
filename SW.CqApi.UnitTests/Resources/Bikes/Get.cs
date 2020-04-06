@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SW.CqApi.UnitTests.Resources.Cars
+namespace SW.CqApi.UnitTests.Resources.Bikes
 {
     public class Get : IGetHandler<int>
     {

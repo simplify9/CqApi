@@ -184,6 +184,26 @@ namespace SW.CqApi
                     }
                 }
             },
+            {
+                typeof(IQueryHandler<,>), new HandlerTypeMetadata
+                {
+                    Key = "get/key",
+                    OpenApiOperation = new OpenApiOperation
+                    {
+
+
+                        Description = "",
+                        Responses = new OpenApiResponses
+                        {
+                            ["200"] = new OpenApiResponse
+                            {
+                                Description = "OK",
+
+                            }
+                        }
+                    }
+                }
+            },
 
         };
         public string Key { get; set; }
