@@ -177,6 +177,21 @@ namespace SW.CqApi
                 var result = await handlerInstance.Invoke(request);
                 return Ok(result);
             }
+            else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<,>))
+            {
+                object keyParam;
+                try
+                {
+                    keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                }
+                catch (Exception ex)
+                {
+                    throw new BadInputFormat(ex);
+                }
+                var request = GetFromQueryString(handlerInfo.ArgumentTypes[1]);
+                var result = await handlerInstance.Invoke(keyParam, request);
+                return Ok(result);
+            }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
             {
                 var result = await handlerInstance.Invoke();
