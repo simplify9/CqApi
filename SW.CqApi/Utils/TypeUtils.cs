@@ -63,13 +63,13 @@ namespace SW.CqApi.Utils
             else if(parameter.IsPrimitive || IsNumericType(parameter) || parameter == typeof(string))
             {
                 schema.Type = jsonifed.Type.ToJsonType();
-                schema.Example = GetExample(parameter, maps);
+                schema.Example = GetExample(parameter, maps, components);
             }
             else if (jsonifed.Items != null)
             {
                 schema.Type = jsonifed.Type.ToJsonType();
                 schema.Items = jsonifed.Items[0].GetOpenApiSchema();
-                schema.Example = GetExample(parameter, maps);
+                schema.Example = GetExample(parameter, maps, components);
             }
             else if(parameter.GetProperties().Length != 0 && !IsNumericType(parameter))
             {
@@ -111,8 +111,11 @@ namespace SW.CqApi.Utils
                     return false;
             }
         }
-        static public IOpenApiAny GetExample(Type parameter, TypeMaps maps)
+        static public IOpenApiAny GetExample(Type parameter, TypeMaps maps, OpenApiComponents components)
         {
+
+            if (components.Schemas.ContainsKey(parameter.Name)) return components.Schemas[parameter.Name].Example;
+
             if (maps.ContainsMap(parameter))
             {
                 return maps.GetMap(parameter).OpenApiExample;
@@ -140,7 +143,7 @@ namespace SW.CqApi.Utils
                 for(int _ = 0; _ < randomNum + 1; _++)
                 {
                     var innerType = parameter.GetElementType() ?? parameter.GenericTypeArguments[0];
-                    exampleArr.Add(GetExample(innerType, maps));
+                    exampleArr.Add(GetExample(innerType, maps, components));
                 }
 
                 return exampleArr;
@@ -150,7 +153,7 @@ namespace SW.CqApi.Utils
                 if (parameter.GetProperties().Length == 0) return new OpenApiNull();
                 var example = new OpenApiObject();
                 foreach(var prop in parameter.GetProperties())
-                    example.Add(prop.Name, GetExample(prop.PropertyType, maps));
+                    example.Add(prop.Name, GetExample(prop.PropertyType, maps, components));
                 return example;
             }
 

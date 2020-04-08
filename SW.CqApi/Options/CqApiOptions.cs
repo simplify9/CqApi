@@ -7,6 +7,29 @@ using System.Text;
 
 namespace SW.CqApi
 {
+
+    public class ResourceDescriptions
+    {
+        private readonly IDictionary<string, string> Descriptions = new Dictionary<string, string>();
+
+        public void Add(string key, string description)
+        {
+            Descriptions[key] = description;
+        }
+        public string Get(string key)
+        {
+            if (Descriptions.ContainsKey(key))
+                return Descriptions[key];
+            else return null;
+        }
+
+        public bool ContainsDescription(string key)
+        {
+            if (Descriptions.ContainsKey(key)) return true;
+            return false;
+        }
+    }
+
     public class CqApiOptions
     {
         /// <summary>
@@ -25,7 +48,7 @@ namespace SW.CqApi
         /// <summary>
         /// Any resource with its key found here, will have its description replaced with the value
         /// </summary>
-        public IDictionary<string, string>? ResourceDescriptions { get; set; }
+        public ResourceDescriptions ResourceDescriptions { get; }
         /// <summary>
         /// Authentication settings
         /// </summary>
@@ -36,7 +59,9 @@ namespace SW.CqApi
         public TypeMaps Maps { get; }
         public CqApiOptions()
         {
+
             Maps = new TypeMaps();
+            ResourceDescriptions = new ResourceDescriptions();
             var objectExample = new OpenApiObject();
             objectExample.TryAdd("foo", new OpenApiInteger(42));
             objectExample.TryAdd("bar", new OpenApiInteger(23));

@@ -39,15 +39,12 @@ namespace SW.CqApi.SampleWeb
             });
 
             services
-                .AddCqApi(config =>
-                {
-                    config.ApplicationName = "Sample Project";
-                    config.ResourceDescriptions = new Dictionary<string, string>
+                .AddCqApi(
+                    config =>
                     {
-                        ["parcels"] =  "Parcel resources have to do with packages, etc.",
-                    };
-                    config.Maps.AddMap<DateTime, string>("12/3/2006");
-                });
+                        config.ResourceDescriptions.Add("Parcels", "Description test");
+                    }
+                );
             services.AddRazorPages();
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).
