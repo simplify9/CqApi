@@ -132,11 +132,10 @@ namespace SW.CqApi
             document.Components = components.AddSecurity(roles, options.AuthOptions);
             foreach (var res in resourceHandlers)
             {
-                string description = options.ResourceDescriptions.ContainsKey(res.Key) ?
-                                     options.ResourceDescriptions[res.Key] : 
+
+                string description = options.ResourceDescriptions.ContainsDescription(res.Key) ?
+                                     options.ResourceDescriptions.Get(res.Key) : 
                                      $"Commands and Queries related to {res.Key}";
-
-
 
                 var pathItem = new OpenApiPathItem();
                 document.Paths.Add(res.Key, pathItem);
