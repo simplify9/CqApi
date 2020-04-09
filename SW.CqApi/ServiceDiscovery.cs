@@ -218,7 +218,7 @@ namespace SW.CqApi
 
                         string path = $"{apiPrefix}/{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
-                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, options.Maps, true);
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, options.Maps, false);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
                 }
