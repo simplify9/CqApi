@@ -72,6 +72,18 @@ namespace SW.CqApi
 
         }
 
+        [HttpGet("{resourceName}/{key}/{token}")]
+        public async Task<IActionResult> GetWithTokenAndKey(
+            string resourceName,
+            string token,
+            string key)
+        {
+
+            var handler = serviceDiscovery.ResolveHandler(resourceName, $"get/key/{token}");
+            return await ExecuteHandler(handler, null, false, null, key, null);
+
+        }
+
         [HttpGet("{resourceName}/{token}")]
         public async Task<IActionResult> GetWithToken(
             string resourceName,

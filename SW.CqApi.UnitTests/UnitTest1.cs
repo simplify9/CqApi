@@ -109,6 +109,14 @@ namespace SW.CqApi.UnitTests
             var rs = await httpResponseMessage.Content.ReadAsAsync<int>();
             Assert.AreEqual<int>(12, rs);
         }
+        [TestMethod]
+        async public Task TestQueryHandlerGen2WithHandle()
+        {
+            var httpClient = server.CreateClient();
+            var httpResponseMessage = await httpClient.GetAsync("cqapi/bikes/6/wheel?q=6");
+            var rs = await httpResponseMessage.Content.ReadAsAsync<int>();
+            Assert.AreEqual<int>(12, rs);
+        }
 
         [TestMethod]
         async public Task TestDeleteHandler()
