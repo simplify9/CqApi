@@ -178,6 +178,14 @@ namespace SW.CqApi
                         document.Paths[path].Operations.Add(OperationType.Get, apiOperation);
                     }
 
+                    else if (handler.Key.StartsWith("get/key"))
+                    {
+                        string path = $"{apiPrefix}/{res.Key}/{{key}}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
+                        initializePath(document, path);
+                        apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters().Take(1), components, options.Maps, true);
+                        document.Paths[path].Operations.Add(OperationType.Get, apiOperation);
+                    }
+
                     else if (handler.Key.StartsWith("get/"))
                     {
                         string path = $"{apiPrefix}/{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
@@ -218,7 +226,7 @@ namespace SW.CqApi
 
                         string path = $"{apiPrefix}/{res.Key}{handler.Key.Substring(handler.Key.LastIndexOf('/'))}";
                         initializePath(document, path);
-                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, options.Maps, true);
+                        apiOperation.RequestBody = OpenApiUtils.GetOpenApiRequestBody(handler.Value.Method, components, options.Maps, false);
                         document.Paths[path].Operations.Add(OperationType.Post, apiOperation);
                     }
                 }
