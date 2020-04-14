@@ -54,15 +54,15 @@ namespace SW.CqApi.Utils
                 var schemaParam = TypeUtils.ExplodeParameter(parameter.ParameterType, components, maps);
                 if (schemaParam.Properties.Count > 0)
                 {
-                    foreach(var prop in schemaParam.Properties.Values)
+                    foreach(var prop in schemaParam.Properties)
                     {
                         openApiParams.Add(new OpenApiParameter
                         {
-                            Name = prop.Title,
-                            Required = !prop.Nullable,
-                            AllowEmptyValue = !prop.Nullable,
+                            Name = prop.Key,
+                            Required = !prop.Value.Nullable,
+                            AllowEmptyValue = !prop.Value.Nullable,
                             In = withKey ? ParameterLocation.Path : ParameterLocation.Query,
-                            Schema = prop
+                            Schema = prop.Value
                         });
                     }
                 }
@@ -93,7 +93,7 @@ namespace SW.CqApi.Utils
                         methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName 
                 }
             };
-            var relevantParameters = withKey ? methodInfo.GetParameters().Skip(1): methodInfo.GetParameters();
+            List<ParameterInfo> relevantParameters = withKey ? methodInfo.GetParameters().Skip(1).ToList() : methodInfo.GetParameters().ToList();
             var paramterDict = new Dictionary<string, OpenApiSchema>();
 
 
@@ -101,7 +101,9 @@ namespace SW.CqApi.Utils
             {
                 paramterDict[param.Name] = TypeUtils.ExplodeParameter(param.ParameterType, components, maps);
             }
-            
+
+            string bodyName = relevantParameters[0].ParameterType.Name;
+
             var requestBody = new OpenApiRequestBody
             {
                 Description = "Command Body",
@@ -112,12 +114,33 @@ namespace SW.CqApi.Utils
                     {
                         Schema = new OpenApiSchema
                         {
-                            Title = "Body",
-                            Properties = paramterDict,
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.Schema,
+                                Id = bodyName
+                            }
                         }
                     }
                 },
             };
+
+
+            //var requestBody = new OpenApiRequestBody
+            //{
+            //    Description = "Command Body",
+            //    Required = relevantParameters.Any(p => !p.IsOptional),
+            //    Content =
+            //    {
+            //        ["application/json"] = new OpenApiMediaType
+            //        {
+            //            Schema = new OpenApiSchema
+            //            {
+            //                Title = "Body",
+            //                Properties = paramterDict,
+            //            }
+            //        }
+            //    },
+            //};
 
             return requestBody;
         }
