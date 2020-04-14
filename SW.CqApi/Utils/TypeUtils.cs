@@ -18,7 +18,6 @@ namespace SW.CqApi.Utils
             var jsonifed = parameter.GetJsonType();
             string name = parameter.Name;
 
-
             if (parameter.GenericTypeArguments.Length > 0)
             {
                 foreach(var genArg in parameter.GenericTypeArguments)
@@ -34,15 +33,14 @@ namespace SW.CqApi.Utils
                 schema = ExplodeParameter(map.Type, components, maps);
                 schema.Example = map.OpenApiExample;
                 components.Schemas[name] = schema;
-                return schema;
             }
             else if (components.Schemas.ContainsKey(name))
             {
-                return components.Schemas[name];
+                schema = components.Schemas[name];
             }
             else if (!String.IsNullOrEmpty(parameter.GetDefaultSchema().Title))
             {
-                return parameter.GetDefaultSchema();
+                schema = parameter.GetDefaultSchema();
             }
             else if (Nullable.GetUnderlyingType(parameter) != null)
             {
@@ -81,12 +79,12 @@ namespace SW.CqApi.Utils
                 }
 
                 schema.Properties = props;
-                components.Schemas[name] = schema;
             }
             else
             {
                 schema.Type = "Object";
             }
+            components.Schemas[name] = schema;
             return schema;
 
         }
