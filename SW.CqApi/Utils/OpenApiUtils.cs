@@ -124,24 +124,6 @@ namespace SW.CqApi.Utils
                 },
             };
 
-
-            //var requestBody = new OpenApiRequestBody
-            //{
-            //    Description = "Command Body",
-            //    Required = relevantParameters.Any(p => !p.IsOptional),
-            //    Content =
-            //    {
-            //        ["application/json"] = new OpenApiMediaType
-            //        {
-            //            Schema = new OpenApiSchema
-            //            {
-            //                Title = "Body",
-            //                Properties = paramterDict,
-            //            }
-            //        }
-            //    },
-            //};
-
             return requestBody;
         }
     }
