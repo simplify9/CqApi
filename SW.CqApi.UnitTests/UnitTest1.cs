@@ -68,7 +68,7 @@ namespace SW.CqApi.UnitTests
         async public Task TestQueryHandlerGen1()
         {
             var httpClient = server.CreateClient();
-            var httpResponseMessage = await httpClient.GetAsync("cqapi/cars?plate=12");
+            var httpResponseMessage = await httpClient.GetAsync("cqapi/cars?plate=12&cartype=sedan");
             var rs = await httpResponseMessage.Content.ReadAsAsync<CarDto>();
             Assert.AreEqual<int>(12, rs.Plate);
         }
