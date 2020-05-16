@@ -194,7 +194,7 @@ namespace SW.CqApi
                 object keyParam;
                 try
                 {
-                    keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                    keyParam = Object.ConvertValueToType(key, handlerInfo.ArgumentTypes[0]);
                 }
                 catch (Exception ex)
                 {
@@ -232,7 +232,7 @@ namespace SW.CqApi
                 object keyParam;
                 try
                 {
-                    keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                    keyParam = Object.ConvertValueToType(key, handlerInfo.ArgumentTypes[0]);
                     typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
 
                 }
@@ -251,7 +251,7 @@ namespace SW.CqApi
                 object keyParam;
                 try
                 {
-                    keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                    keyParam = Object.ConvertValueToType(key, handlerInfo.ArgumentTypes[0]);
                 }
                 catch (Exception ex)
                 {
@@ -267,7 +267,7 @@ namespace SW.CqApi
                 object keyParam;
                 try
                 {
-                    keyParam = Object.ConvertValue(key, handlerInfo.ArgumentTypes[0]);
+                    keyParam = Object.ConvertValueToType(key, handlerInfo.ArgumentTypes[0]);
                 }
                 catch (Exception ex)
                 {
@@ -291,7 +291,7 @@ namespace SW.CqApi
                 foreach (var property in properties)
                 {
                     var valueAsString = Request.Query[property.Name].FirstOrDefault();
-                    var value = Object.ConvertValue(valueAsString, property.PropertyType);
+                    var value = Object.ConvertValueToType(valueAsString, property.PropertyType);
 
                     if (value == null)
                         continue;
