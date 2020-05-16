@@ -12,6 +12,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using Microsoft.AspNetCore.Server.IIS.Core;
+using SW.ObjectConversion;
 
 namespace SW.CqApi
 {
@@ -112,7 +113,7 @@ namespace SW.CqApi
         }
 
         [HttpPost("{resourceName}")]
-        public async Task<IActionResult> Post(string resourceName, [FromBody]object body)
+        public async Task<IActionResult> Post(string resourceName, [FromBody] object body)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "post");
             return await ExecuteHandler(handlerInfo, null, false, null, null, body);
@@ -121,7 +122,7 @@ namespace SW.CqApi
         }
 
         [HttpPost("{resourceName}/{token}")]
-        public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody]object body)
+        public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody] object body)
         {
 
             if (serviceDiscovery.TryResolveHandler(resourceName, $"post/{token}", out var handlerInfo))
@@ -138,7 +139,7 @@ namespace SW.CqApi
         }
 
         [HttpPost("{resourceName}/{key}/{command}")]
-        public async Task<IActionResult> PostWithKeyAndCommandName(string resourceName, string key, string command, [FromBody]object body)
+        public async Task<IActionResult> PostWithKeyAndCommandName(string resourceName, string key, string command, [FromBody] object body)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, $"post/key/{command}");
             return await ExecuteHandler(handlerInfo, null, false, null, key, body);
@@ -194,7 +195,7 @@ namespace SW.CqApi
                 object keyParam;
                 try
                 {
-                    keyParam = Object.ConvertValueToType(key, handlerInfo.ArgumentTypes[0]);
+                    keyParam = key.ConvertValueToType(handlerInfo.ArgumentTypes[0]);
                 }
                 catch (Exception ex)
                 {
@@ -232,7 +233,7 @@ namespace SW.CqApi
                 object keyParam;
                 try
                 {
-                    keyParam = Object.ConvertValueToType(key, handlerInfo.ArgumentTypes[0]);
+                    keyParam = key.ConvertValueToType(handlerInfo.ArgumentTypes[0]);
                     typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
 
                 }
@@ -251,7 +252,7 @@ namespace SW.CqApi
                 object keyParam;
                 try
                 {
-                    keyParam = Object.ConvertValueToType(key, handlerInfo.ArgumentTypes[0]);
+                    keyParam = key.ConvertValueToType(handlerInfo.ArgumentTypes[0]);
                 }
                 catch (Exception ex)
                 {
@@ -267,7 +268,7 @@ namespace SW.CqApi
                 object keyParam;
                 try
                 {
-                    keyParam = Object.ConvertValueToType(key, handlerInfo.ArgumentTypes[0]);
+                    keyParam = key.ConvertValueToType(handlerInfo.ArgumentTypes[0]);
                 }
                 catch (Exception ex)
                 {
@@ -291,7 +292,7 @@ namespace SW.CqApi
                 foreach (var property in properties)
                 {
                     var valueAsString = Request.Query[property.Name].FirstOrDefault();
-                    var value = Object.ConvertValueToType(valueAsString, property.PropertyType);
+                    var value = valueAsString.ConvertValueToType(property.PropertyType);
 
                     if (value == null)
                         continue;
@@ -303,7 +304,7 @@ namespace SW.CqApi
             catch (Exception ex)
             {
                 throw new SWException($"Error constructing type: '{type.Name}' from parameters. {ex.Message}");
-                
+
             }
 
         }

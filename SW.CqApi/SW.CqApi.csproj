@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.1.4" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
     <PackageReference Include="Scrutor" Version="3.2.1" />
+    <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.5.16.1" />
     <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.4.30.2" />
   </ItemGroup>
 
