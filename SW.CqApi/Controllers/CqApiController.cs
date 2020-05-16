@@ -302,7 +302,7 @@ namespace SW.CqApi
             }
             catch (Exception ex)
             {
-                throw new SWException($"Error constructing type: '{type.Name}' from parameters.", ex);
+                throw new SWException($"Error constructing type: '{type.Name}' from parameters. {ex.Message}");
                 
             }
 
