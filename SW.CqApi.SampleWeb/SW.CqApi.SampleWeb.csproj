@@ -10,7 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SW.CqApi.SampleModel\SW.CqApi.SampleModel.csproj" />
     <ProjectReference Include="..\SW.CqApi\SW.CqApi.csproj" />
   </ItemGroup>
 

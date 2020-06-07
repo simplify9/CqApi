@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-namespace SW.CqApi.SampleModel 
+namespace SW.CqApi.SampleWeb.Model
 {
     public class Employee
     {
