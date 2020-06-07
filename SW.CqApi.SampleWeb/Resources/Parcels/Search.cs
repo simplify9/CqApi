@@ -1,5 +1,5 @@
 ﻿
-using SW.CqApi.SampleModel;
+using SW.CqApi.SampleWeb.Model;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;

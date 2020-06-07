@@ -17,7 +17,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SW.CqApi.AuthOptions;
-using SW.CqApi.SampleModel;
 
 namespace SW.CqApi.SampleWeb
 {

@@ -3,8 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>SimplyWorks.CqApi</PackageId>
-    <Authors>SimplyWorks</Authors>
+    <Authors>Simplify9</Authors>
     <Product>SimplyWorks.CqApi</Product>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/simplify9/CqApi</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/simplify9/CqApi</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,8 +20,15 @@
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.1.4" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
     <PackageReference Include="Scrutor" Version="3.2.1" />
-    <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.5.16.1" />
-    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.4.30.2" />
+    <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.6.4.2" />
+    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.6.4.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
