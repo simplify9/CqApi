@@ -39,7 +39,7 @@ namespace SW.CqApi
                 .AsImplementedInterfaces().WithTransientLifetime());
 
             services.AddHttpContextAccessor();
-            services.AddScoped<IRequestContext, RequestContext>();
+            services.AddScoped<IRequestContextProvider, RequestContextProvider>();
             services.AddScoped<RequestContextManager>();
 
             services.AddRouting(options =>

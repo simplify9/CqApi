@@ -15,11 +15,12 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
 
     class Approve : ICommandHandler<int, ApproveCarCommand>
     {
-        private readonly IRequestContext requestContext;
+        private readonly RequestContextManager requestContextManager;
 
-        public Approve(IRequestContext requestContext)
+        public Approve(RequestContextManager requestContextManager)
         {
-            this.requestContext = requestContext;
+            
+            this.requestContextManager = requestContextManager;
         }
 
         async public Task<object> Handle(int key, ApproveCarCommand request)
