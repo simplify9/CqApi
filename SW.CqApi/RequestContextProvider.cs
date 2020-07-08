@@ -20,7 +20,7 @@ namespace SW.CqApi
             this.httpContextAccessor = httpContextAccessor;
         }
 
-        public Task<RequestContext> GetContext()
+        async public Task<RequestContext> GetContext()
         {
             //var ignoredKeys = new string[] { "filter", "sort", "size", "page", "count", "request-correlation-id" };
             var httpContext = httpContextAccessor.HttpContext;
@@ -42,7 +42,7 @@ namespace SW.CqApi
             if (httpContext.Request.Headers.TryGetValue("request-correlation-id", out var cid) && cid.Count > 0)
                 correlationId = cid.First();
 
-            return Task.FromResult(new RequestContext(httpContext.User, vals, correlationId));
+            return new RequestContext(httpContext.User, vals, correlationId);
         }
 
         //public ClaimsPrincipal User

@@ -45,20 +45,6 @@ namespace SW.CqApi.UnitTests
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("6547647654764764767657658658758765876532542"))
                     };
                 });
-            //services.AddHttpClient<Resources.Car.ApiClient>();
-
-            //var claims = new List<Claim>
-            //{
-            //    new Claim(ClaimTypes.Name, "samer"),
-            //    new Claim("FullName", "blabla"),
-            //    new Claim(ClaimTypes.Role, "mapi.sw.modelapi.samplemodel.carservice.*"),
-            //    new Claim(ClaimTypes.Role, "Supervisor"),
-            //};
-
-            //var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            //services.AddMapiMockCallContext(new ClaimsPrincipal(claimsIdentity));
-            //services.AddMapiCallContext();  
 
 
         }
