@@ -14,51 +14,35 @@ namespace SW.CqApi
     internal class RequestContextProvider : IRequestContextProvider
     {
         private readonly IHttpContextAccessor httpContextAccessor;
-        private readonly string correlationId;
 
         public RequestContextProvider(IHttpContextAccessor httpContextAccessor)
         {
             this.httpContextAccessor = httpContextAccessor;
-            correlationId = Guid.NewGuid().ToString("N");
         }
 
         public Task<RequestContext> GetContext()
         {
+            //var ignoredKeys = new string[] { "filter", "sort", "size", "page", "count", "request-correlation-id" };
             var httpContext = httpContextAccessor.HttpContext;
+
             if (httpContext == null) return null;
-            if (httpContext.User.Identity.IsAuthenticated)
-            {
+            if (!httpContext.User.Identity.IsAuthenticated) return null;
 
-                var vals = new List<RequestValue>();
+            var vals = new List<RequestValue>();
 
-                foreach (var h in httpContextAccessor.HttpContext.Request.Headers)
-                {
-                    vals.Add(new RequestValue(h.Key, string.Join(";", h.Value.ToArray()), RequestValueType.HttpHeader));
-                }
+            foreach (var h in httpContextAccessor.HttpContext.Request.Headers)
+                vals.Add(new RequestValue(h.Key, string.Join(";", h.Value.ToArray()), RequestValueType.HttpHeader));
 
-                var ignoredKeys = new string[] { "filter", "sort", "size", "page", "count" };
+            foreach (var q in httpContextAccessor.HttpContext.Request.Query)
+                //if (!ignoredKeys.Contains(q.Key, StringComparer.OrdinalIgnoreCase))
+                vals.Add(new RequestValue(q.Key, string.Join(";", q.Value.ToArray()), RequestValueType.QueryParameter));
 
-                foreach (var q in httpContextAccessor.HttpContext.Request.Query)
+            string correlationId = Guid.NewGuid().ToString("N");
 
-                    if (!ignoredKeys.Contains(q.Key, StringComparer.OrdinalIgnoreCase))
+            if (httpContext.Request.Headers.TryGetValue("request-correlation-id", out var cid) && cid.Count > 0)
+                correlationId = cid.First();
 
-                        vals.Add(new RequestValue(q.Key, string.Join(";", q.Value.ToArray()), RequestValueType.QueryParameter));
-
-                string correlationId = null;
-
-                if (httpContext.Request.Headers.TryGetValue("request-correlation-id", out var cid) && cid.Count > 0)
-                    correlationId = cid.First();
-
-
-
-                return Task.FromResult(new RequestContext(httpContext.User, vals, correlationId));
-                //{
-                //    User = httpContext.User,
-                //    CorrelationId = correlationId
-                //});
-                //return httpContext.User;
-            }
-            return null;
+            return Task.FromResult(new RequestContext(httpContext.User, vals, correlationId));
         }
 
         //public ClaimsPrincipal User
