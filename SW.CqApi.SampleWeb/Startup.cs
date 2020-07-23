@@ -17,6 +17,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SW.CqApi.AuthOptions;
+using SW.HttpExtensions;
+using SW.PrimitiveTypes;
 
 namespace SW.CqApi.SampleWeb
 {
@@ -67,6 +69,8 @@ namespace SW.CqApi.SampleWeb
 
                 });
 
+            services.AddScoped<RequestContext>(); 
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -81,6 +85,9 @@ namespace SW.CqApi.SampleWeb
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseHttpUserRequestContext();
+
 
             app.UseSwaggerUI(c =>
             {

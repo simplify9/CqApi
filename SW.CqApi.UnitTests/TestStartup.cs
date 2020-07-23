@@ -11,7 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SW.CqApi;
-
+using SW.HttpExtensions;
+using SW.PrimitiveTypes;
 
 namespace SW.CqApi.UnitTests
 {
@@ -31,6 +32,7 @@ namespace SW.CqApi.UnitTests
 
             services.AddControllers().AddApplicationPart(typeof(CqApiController).Assembly);
             services.AddCqApi(typeof(TestStartup).Assembly);
+            services.AddScoped<RequestContext>(); 
             services.AddAuthentication().
                 AddJwtBearer(options =>
                 {
@@ -47,6 +49,8 @@ namespace SW.CqApi.UnitTests
                 });
 
 
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +58,9 @@ namespace SW.CqApi.UnitTests
         {
             app.UseRouting();
             app.UseAuthorization();
+
+            app.UseHttpUserRequestContext();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

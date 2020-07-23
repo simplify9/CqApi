@@ -26,9 +26,9 @@ namespace SW.CqApi
 
             if (handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>() is ProtectAttribute protectAttribute)
             {
-                var requestContext = await serviceProvider.GetRequiredService<RequestContextManager>().GetCurrentContext();
+                var requestContext =  serviceProvider.GetRequiredService<RequestContext>();
 
-                if (requestContext is null)
+                if (!requestContext.IsValid)
 
                     throw new CqApiUnauthorizedException();
                 

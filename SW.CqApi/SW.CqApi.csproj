@@ -16,12 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="9.0.0" />
+    <PackageReference Include="FluentValidation" Version="9.0.1" />
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.2.2" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
     <PackageReference Include="Scrutor" Version="3.2.1" />
-    <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.6.4.2" />
-    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.7.8.8" />
+    <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.7.12.2" />
+    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.7.23.4" />
   </ItemGroup>
 
   <ItemGroup>
