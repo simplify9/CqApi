@@ -19,6 +19,7 @@ namespace SW.CqApi
 
     [CqApiExceptionFilter]
     [Route("{prefix:cqapiPrefix}")]
+    [Route("{locale}/{prefix:cqapiPrefix}", Order = 0)]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
     [AllowAnonymous]
@@ -65,7 +66,8 @@ namespace SW.CqApi
             [FromQuery(Name = "page")] int pageIndex,
             [FromQuery(Name = "count")] bool countRows,
             [FromQuery(Name = "search")] string searchPhrase,
-            [FromQuery(Name = "lookup")] bool lookup)
+            [FromQuery(Name = "lookup")] bool lookup,
+            [FromRoute]string locale = null)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "get");
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
@@ -77,7 +79,8 @@ namespace SW.CqApi
         public async Task<IActionResult> GetWithTokenAndKey(
             string resourceName,
             string token,
-            string key)
+            string key,
+            [FromRoute]string locale = null)
         {
 
             var handler = serviceDiscovery.ResolveHandler(resourceName, $"get/key/{token}");
@@ -95,17 +98,19 @@ namespace SW.CqApi
             [FromQuery(Name = "page")] int pageIndex,
             [FromQuery(Name = "search")] string searchPhrase,
             [FromQuery(Name = "count")] bool countRows,
-            [FromQuery(Name = "lookup")] bool lookup)
+            [FromQuery(Name = "lookup")] bool lookup,
+            [FromRoute]string locale = null
+            )
         {
 
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
             if (String.IsNullOrEmpty(searchyRequest.ToString())) searchyRequest = null;
 
             if (serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
-                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, null);
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, null, null, locale);
 
             else if (serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
-                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, token, null);
+                return await ExecuteHandler(handlerInfo, searchyRequest, lookup, searchPhrase, token, null, locale);
 
             else
                 return NotFound();
@@ -113,25 +118,25 @@ namespace SW.CqApi
         }
 
         [HttpPost("{resourceName}")]
-        public async Task<IActionResult> Post(string resourceName, [FromBody] object body)
+        public async Task<IActionResult> Post(string resourceName, [FromBody] object body, [FromRoute]string locale = null)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "post");
-            return await ExecuteHandler(handlerInfo, null, false, null, null, body);
+            return await ExecuteHandler(handlerInfo, null, false, null, null, body, locale);
             //return Created(new Uri(new Uri($"{Request.Scheme}://{Request.Host}{Request.PathBase}"), $"/mapi/{resourceName}/{key}"), null);
             //new Uri($"{Request.Scheme}://{Request.Host}{Request.PathBase}"),
         }
 
         [HttpPost("{resourceName}/{token}")]
-        public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody] object body)
+        public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody] object body, [FromRoute]string locale = null)
         {
 
             if (serviceDiscovery.TryResolveHandler(resourceName, $"post/{token}", out var handlerInfo))
 
-                return await ExecuteHandler(handlerInfo, null, false, null, null, body);
+                return await ExecuteHandler(handlerInfo, null, false, null, null, body, locale);
 
             else if (serviceDiscovery.TryResolveHandler(resourceName, "post/key", out handlerInfo))
 
-                return await ExecuteHandler(handlerInfo, null, false, null, token, body);
+                return await ExecuteHandler(handlerInfo, null, false, null, token, body, locale);
 
             else
                 return NotFound();
@@ -139,17 +144,17 @@ namespace SW.CqApi
         }
 
         [HttpPost("{resourceName}/{key}/{command}")]
-        public async Task<IActionResult> PostWithKeyAndCommandName(string resourceName, string key, string command, [FromBody] object body)
+        public async Task<IActionResult> PostWithKeyAndCommandName(string resourceName, string key, string command, [FromBody] object body, [FromRoute]string locale = null)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, $"post/key/{command}");
-            return await ExecuteHandler(handlerInfo, null, false, null, key, body);
+            return await ExecuteHandler(handlerInfo, null, false, null, key, body, locale);
         }
 
         [HttpDelete("{resourceName}/{key}")]
-        public async Task<IActionResult> Delete(string resourceName, string key)
+        public async Task<IActionResult> Delete(string resourceName, string key, [FromRoute]string locale = null)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "delete/key");
-            return await ExecuteHandler(handlerInfo, null, false, null, key, null);
+            return await ExecuteHandler(handlerInfo, null, false, null, key, null, locale);
         }
 
         async Task<bool> ValidateInput(object input)
@@ -168,26 +173,26 @@ namespace SW.CqApi
             return false;
         }
 
-        async Task<IActionResult> ExecuteHandler(HandlerInfo handlerInfo, SearchyRequest searchyRequest, bool lookup, string searchPhrase, string key, object body)
+        async Task<IActionResult> ExecuteHandler(HandlerInfo handlerInfo, SearchyRequest searchyRequest, bool lookup, string searchPhrase, string key, object body, string locale = null)
         {
             var handlerInstance = serviceProvider.GetHandlerInstance(handlerInfo);
 
             if (handlerInfo.NormalizedInterfaceType == typeof(ISearchyHandler))
             {
-                var result = await handlerInstance.Invoke(searchyRequest, lookup, searchPhrase);
+                var result = await handlerInstance.Invoke(searchyRequest, lookup, searchPhrase, locale);
                 if (lookup) return StatusCode(206, result);
                 return Ok(result);
 
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler))
             {
-                var result = await handlerInstance.Invoke();
+                var result = await handlerInstance.Invoke(locale);
                 return Ok(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
             {
                 var request = GetFromQueryString(handlerInfo.ArgumentTypes[0]);
-                var result = await handlerInstance.Invoke(request);
+                var result = await handlerInstance.Invoke(request, locale);
                 return Ok(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<,>))
@@ -202,12 +207,12 @@ namespace SW.CqApi
                     throw new BadInputFormat(ex);
                 }
                 var request = GetFromQueryString(handlerInfo.ArgumentTypes[1]);
-                var result = await handlerInstance.Invoke(keyParam, request);
+                var result = await handlerInstance.Invoke(keyParam, request, locale);
                 return Ok(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
             {
-                var result = await handlerInstance.Invoke();
+                var result = await handlerInstance.Invoke(locale);
                 if (result == null) return NoContent();
                 return Ok(result);
             }
@@ -223,7 +228,7 @@ namespace SW.CqApi
                     throw new BadInputFormat(ex);
                 }
                 if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
-                var result = await handlerInstance.Invoke(typedParam);
+                var result = await handlerInstance.Invoke(typedParam, locale);
                 if (result == null) return NoContent();
                 return Ok(result);
             }
@@ -258,7 +263,7 @@ namespace SW.CqApi
                 {
                     throw new BadInputFormat(ex);
                 }
-                var result = await handlerInstance.Invoke(keyParam, lookup);
+                var result = await handlerInstance.Invoke(keyParam, lookup, locale);
                 if (result == null) return NotFound();
                 if (lookup) return StatusCode(206, result);
                 return Ok(result);
@@ -274,7 +279,7 @@ namespace SW.CqApi
                 {
                     throw new BadInputFormat(ex);
                 }
-                var result = await handlerInstance.Invoke(keyParam);
+                var result = await handlerInstance.Invoke(keyParam, locale);
                 return Accepted();
             }
             else
