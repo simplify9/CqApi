@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SW.CqApi.AuthOptions;
+using SW.CqApi.Extensions;
 using SW.CqApi.SampleModel;
 
 namespace SW.CqApi.SampleWeb
@@ -88,6 +89,9 @@ namespace SW.CqApi.SampleWeb
                 c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
 
             });
+
+
+            app.UseCqApi();
 
             app.Use(async (context, next) =>
             {

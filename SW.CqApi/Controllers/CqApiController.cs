@@ -19,7 +19,6 @@ namespace SW.CqApi
 
     [CqApiExceptionFilter]
     [Route("{prefix:cqapiPrefix}")]
-    [Route("{locale}/{prefix:cqapiPrefix}", Order = 0)]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
     [AllowAnonymous]
