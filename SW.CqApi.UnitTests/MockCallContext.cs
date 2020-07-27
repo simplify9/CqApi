@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SW.ModelApi
 {
-    public class MockCallContext : IRequestContext
+    public class MockCallContext : RequestContext
     {
         public MockCallContext(ClaimsPrincipal user)
         {
