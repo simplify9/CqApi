@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -36,27 +39,38 @@ namespace SW.CqApi.Extensions
 
                 var rc = (RequestContext)context.RequestServices.GetService(typeof(RequestContext));
 
+                if (segmented.Count == 0)
+                {
+                    await next.Invoke();
+                    return;
+                }
+
                 //Set in request context.
                 foreach(var segment in segmented) {
 
                     if(new Regex("v.*").Match(segment).Success)
                     {
                         //set version in rc
-                        segmented.Remove(segment);
+                        pathArr.Remove(segment);
+                        continue;
                     }
-                    else if(new Regex("..-..").Match(segment).Success)
+
+                    bool langCultureMatch = new Regex("..-..").Match(segment).Success;
+                    bool langMatch = new Regex("..").Match(segment).Success;
+
+                    if(langCultureMatch || langMatch)
                     {
                         //set locale
-                        segmented.Remove(segment);
+                        pathArr.Remove(segment);
+                        continue;
                     }
                 }
 
 
-                string newPath = string.Join('/', pathArr);
+                //string newPath = scheme + "://" + host + '/' + string.Join('/', pathArr);
+                string newPath = scheme + "://" + host + '/' + "cqapi/parcels/1";
 
-                context.Request.Path = newPath;
-
-                await next.Invoke();
+                context.Response.Redirect(newPath);
             });
         }
     }

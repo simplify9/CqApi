@@ -25,7 +25,7 @@ namespace SW.CqApi
 
             if (handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>() is ProtectAttribute protectAttribute)
             {
-                var requestContext = serviceProvider.GetRequiredService<RequestContextManager>().Current;
+                var requestContext = serviceProvider.GetRequiredService<RequestContext>();
 
                 if (requestContext is null)
 
