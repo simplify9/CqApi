@@ -42,7 +42,7 @@ namespace SW.CqApi.Extensions
 
                     if(new Regex("v.*").Match(segment).Success)
                     {
-                        //set version in rc
+                        rc.SetVersion(segment);
                         pathArr.Remove(segment);
                         continue;
                     }
@@ -52,8 +52,7 @@ namespace SW.CqApi.Extensions
 
                     if(langCultureMatch || langMatch)
                     {
-                        //set locale
-                        rc.Set(null, null, "--TEST123");
+                        rc.SetLocale(segment);
                         pathArr.Remove(segment);
                         continue;
                     }
