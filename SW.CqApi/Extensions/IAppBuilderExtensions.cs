@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Net.Http.Headers;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,11 @@ namespace SW.CqApi.Extensions
 {
     public static class IApplicationBuilderExtensions
     {
+        /// <summary>
+        /// Note: This function needs to be placed before UseRouting() (or similar functions)
+        /// to ensure the rewrite process is successful
+        /// </summary>
+        /// <param name="builder"></param>
         public static void UseCqApi(this IApplicationBuilder builder)
         {
 
@@ -61,6 +67,7 @@ namespace SW.CqApi.Extensions
                     if(langCultureMatch || langMatch)
                     {
                         //set locale
+                        rc.Set(null, null, "--TEST123");
                         pathArr.Remove(segment);
                         continue;
                     }
@@ -69,7 +76,12 @@ namespace SW.CqApi.Extensions
 
                 string newPath = scheme + "://" + host + '/' + string.Join('/', pathArr);
 
-                context.Response.Redirect(newPath);
+                context.Response.Headers[HeaderNames.Location] = newPath;
+                context.Request.Path = '/' + string.Join('/', pathArr);
+
+                string tmp = context.Request.GetDisplayUrl();
+                
+                await next();
             });
         }
     }

@@ -81,10 +81,11 @@ namespace SW.CqApi.SampleWeb
             }
 
             app.UseHttpsRedirection();
+            app.UseHttpUserRequestContext();
+            app.UseCqApi();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseHttpUserRequestContext();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
@@ -92,7 +93,6 @@ namespace SW.CqApi.SampleWeb
             });
 
 
-            app.UseCqApi();
 
             app.Use(async (context, next) =>
             {
@@ -110,6 +110,7 @@ namespace SW.CqApi.SampleWeb
                 endpoints.MapRazorPages();
 
             });
+
         }
     }
 }
