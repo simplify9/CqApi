@@ -57,6 +57,17 @@ namespace SW.CqApi
         /// Maps for types, how they're sent through the API
         /// </summary>
         public TypeMaps Maps { get; }
+
+
+        /// <summary>
+        /// Get localization information prefix (Eg: en-us)
+        /// </summary>
+        public bool GetLocale { get; set; }
+        /// <summary>
+        /// Get api versioning information prefix (Eg: v2.1)
+        /// </summary>
+        public bool GetVersion { get; set; }
+
         public CqApiOptions()
         {
 

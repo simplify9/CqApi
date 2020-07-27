@@ -38,10 +38,8 @@ namespace SW.CqApi
                 .AddClasses(classes => classes.AssignableTo<IValidator>())
                 .AsImplementedInterfaces().WithTransientLifetime());
 
-            //services.AddHttpContextAccessor();
-            //services.AddScoped<IRequestContextProvider, RequestContextProvider>();
-            //services.AddScoped<RequestContextManager>();
-
+            services.AddHttpContextAccessor();
+            services.AddScoped<RequestContext>();
             services.AddRouting(options =>
             {
                 options.ConstraintMap.Add("cqapiPrefix", typeof(CqapiPrefixRouteConstraint));

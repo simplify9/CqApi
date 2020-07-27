@@ -14,7 +14,6 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
     public class Search : ISearchyHandler
     {
         private readonly RequestContext requestContext;
-
         public Search(RequestContext  requestContext)
         {
             this.requestContext = requestContext;

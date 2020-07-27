@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SW.CqApi.AuthOptions;
+using SW.CqApi.Extensions;
 using SW.HttpExtensions;
 using SW.PrimitiveTypes;
 
@@ -82,18 +83,21 @@ namespace SW.CqApi.SampleWeb
             }
 
             app.UseHttpsRedirection();
+            app.UseHttpUserRequestContext();
+            app.UseCqApi();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseHttpUserRequestContext();
 
-
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
 
             });
+
+
 
             app.Use(async (context, next) =>
             {
@@ -111,6 +115,7 @@ namespace SW.CqApi.SampleWeb
                 endpoints.MapRazorPages();
 
             });
+
         }
     }
 }
