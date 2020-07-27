@@ -20,13 +20,11 @@
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.2.2" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
     <PackageReference Include="Scrutor" Version="3.2.1" />
-<<<<<<< HEAD
     <PackageReference Include="SimplyWorks.HttpExtensions" Version="2020.7.27.1" />
     <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.5.16.1" />
     <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.7.27.5" />
-=======
     <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.7.12.2" />
-    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.7.23.6" />
+    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.7.27.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,7 +32,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
->>>>>>> origin/master
   </ItemGroup>
 
 </Project>
