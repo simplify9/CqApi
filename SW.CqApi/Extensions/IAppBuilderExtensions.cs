@@ -19,38 +19,24 @@ namespace SW.CqApi.Extensions
         /// to ensure the rewrite process is successful
         /// </summary>
         /// <param name="builder"></param>
-        public static void UseCqApi(this IApplicationBuilder builder)
+        public static void UseCqApi(this IApplicationBuilder app)
         {
 
-            builder.Use(async (context, next) =>
+            app.Use(async (context, next) =>
             {
 
                 CqApiOptions options = (CqApiOptions)context.RequestServices.GetService(typeof(CqApiOptions));
-                string scheme = context.Request.Scheme;
-                string host = context.Request.Host.Value;
-                string fullPath = context.Request.GetDisplayUrl();
-
-                string route = fullPath.Substring(scheme.Length + 3 + host.Length);
-
-                if (route.Count(s => s == '/') < 2)
-                {
-                    await next.Invoke();
-                    return;
-                }
-                
-
-                List<string> pathArr = new List<string>(route.Split('/').Skip(1));
-
+                IList<string> pathArr = new List<string>(context.Request.Path.Value.Split('/'));
                 IList<string> segmented = new List<string>(pathArr.Take(pathArr.IndexOf(options.Prefix)));
-
-                var rc = (RequestContext)context.RequestServices.GetService(typeof(RequestContext));
 
                 if (segmented.Count == 0)
                 {
-                    await next.Invoke();
+                    await next();
                     return;
                 }
 
+                var rc = (RequestContext)context.RequestServices.GetService(typeof(RequestContext));
+                
                 //Set in request context.
                 foreach(var segment in segmented) {
 
@@ -73,13 +59,7 @@ namespace SW.CqApi.Extensions
                     }
                 }
 
-
-                string newPath = scheme + "://" + host + '/' + string.Join('/', pathArr);
-
-                context.Response.Headers[HeaderNames.Location] = newPath;
                 context.Request.Path = '/' + string.Join('/', pathArr);
-
-                string tmp = context.Request.GetDisplayUrl();
                 
                 await next();
             });
