@@ -16,7 +16,7 @@ namespace SW.CqApi.Extensions
     {
         /// <summary>
         /// Note: This function needs to be placed before UseRouting() (or similar functions)
-        /// to ensure the rewrite process is successful
+        /// to ensure the rewrite process is ahead of routing.
         /// </summary>
         /// <param name="builder"></param>
         public static void UseCqApi(this IApplicationBuilder app)
