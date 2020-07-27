@@ -17,7 +17,6 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
         }
         public async Task<object> Handle(string key, ConvertDto request)
         {
-            var locale = context.CorrelationId;
             return key;
         }
     }
