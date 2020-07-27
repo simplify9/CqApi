@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using SW.CqApi.AuthOptions;
 using SW.CqApi.Extensions;
 using SW.CqApi.SampleModel;
+using SW.HttpExtensions;
 
 namespace SW.CqApi.SampleWeb
 {
@@ -83,7 +84,7 @@ namespace SW.CqApi.SampleWeb
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseHttpUserRequestContext();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
