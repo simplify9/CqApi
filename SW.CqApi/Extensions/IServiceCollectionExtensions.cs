@@ -38,8 +38,14 @@ namespace SW.CqApi
                 .AddClasses(classes => classes.AssignableTo<IValidator>())
                 .AsImplementedInterfaces().WithTransientLifetime());
 
+<<<<<<< HEAD
             services.AddHttpContextAccessor();
             services.AddScoped<RequestContext>();
+=======
+            //services.AddHttpContextAccessor();
+            //services.AddScoped<IRequestContextProvider, RequestContextProvider>();
+            //services.AddScoped<RequestContextManager>();
+>>>>>>> origin/master
 
             services.AddRouting(options =>
             {

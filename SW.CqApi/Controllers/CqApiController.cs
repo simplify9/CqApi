@@ -162,7 +162,8 @@ namespace SW.CqApi
 
             if (!(serviceProvider.GetService(tvalidator) is IValidator validator)) return true;
 
-            var validationResult = await validator.ValidateAsync(input);
+            var context = new ValidationContext<object>(input);
+            var validationResult = await validator.ValidateAsync(context);
 
             if (validationResult.IsValid) return true;
 
@@ -174,7 +175,7 @@ namespace SW.CqApi
 
         async Task<IActionResult> ExecuteHandler(HandlerInfo handlerInfo, SearchyRequest searchyRequest, bool lookup, string searchPhrase, string key, object body)
         {
-            var handlerInstance = serviceProvider.GetHandlerInstance(handlerInfo);
+            var handlerInstance = await serviceProvider.GetHandlerInstance(handlerInfo);
 
             if (handlerInfo.NormalizedInterfaceType == typeof(ISearchyHandler))
             {

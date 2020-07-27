@@ -3,8 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>SimplyWorks.CqApi</PackageId>
-    <Authors>SimplyWorks</Authors>
+    <Authors>Simplify9</Authors>
     <Product>SimplyWorks.CqApi</Product>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/simplify9/CqApi</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/simplify9/CqApi</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,13 +16,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="8.6.2" />
-    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.1.4" />
+    <PackageReference Include="FluentValidation" Version="9.0.1" />
+    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.2.2" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
     <PackageReference Include="Scrutor" Version="3.2.1" />
+<<<<<<< HEAD
     <PackageReference Include="SimplyWorks.HttpExtensions" Version="2020.7.27.1" />
     <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.5.16.1" />
     <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.7.27.5" />
+=======
+    <PackageReference Include="SimplyWorks.ObjectConversion" Version="2020.7.12.2" />
+    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="2020.7.23.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+>>>>>>> origin/master
   </ItemGroup>
 
 </Project>

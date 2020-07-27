@@ -12,11 +12,15 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
     [Returns(Type = typeof(object), StatusCode = 202, Description = "lookup == false")]
     public class ScanIncoming : ICommandHandler<ScanIncomingCommand>
     {
+<<<<<<< HEAD
         private readonly RequestContext requestContext;
 
         public ScanIncoming(RequestContext requestContext)
+=======
+
+        public ScanIncoming()
+>>>>>>> origin/master
         {
-            this.requestContext = requestContext;
         }
 
         async public Task<object> Handle(ScanIncomingCommand request)

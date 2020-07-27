@@ -6,12 +6,13 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SW.CqApi
 {
     internal static class IServiceProviderExtensions
     {
-        public static HandlerInstance GetHandlerInstance(this IServiceProvider serviceProvider, HandlerInfo handlerInfo)
+        async public static Task<HandlerInstance> GetHandlerInstance(this IServiceProvider serviceProvider, HandlerInfo handlerInfo)
         {
             var handlerInstance = new HandlerInstance
             {
@@ -25,9 +26,13 @@ namespace SW.CqApi
 
             if (handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>() is ProtectAttribute protectAttribute)
             {
+<<<<<<< HEAD
                 var requestContext = serviceProvider.GetRequiredService<RequestContext>();
+=======
+                var requestContext =  serviceProvider.GetRequiredService<RequestContext>();
+>>>>>>> origin/master
 
-                if (requestContext is null)
+                if (!requestContext.IsValid)
 
                     throw new CqApiUnauthorizedException();
                 

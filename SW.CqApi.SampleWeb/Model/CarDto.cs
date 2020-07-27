@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace SW.CqApi.SampleModel
+namespace SW.CqApi.SampleWeb.Model
 {
     public class CarOwner {
         public string Name { get; set; }

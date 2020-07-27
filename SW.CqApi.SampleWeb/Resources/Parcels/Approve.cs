@@ -19,6 +19,7 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
 
         public Approve(RequestContext requestContext)
         {
+            
             this.requestContext = requestContext;
         }
 

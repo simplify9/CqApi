@@ -11,7 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SW.CqApi;
-
+using SW.HttpExtensions;
+using SW.PrimitiveTypes;
 
 namespace SW.CqApi.UnitTests
 {
@@ -31,6 +32,7 @@ namespace SW.CqApi.UnitTests
 
             services.AddControllers().AddApplicationPart(typeof(CqApiController).Assembly);
             services.AddCqApi(typeof(TestStartup).Assembly);
+            services.AddScoped<RequestContext>(); 
             services.AddAuthentication().
                 AddJwtBearer(options =>
                 {
@@ -45,20 +47,8 @@ namespace SW.CqApi.UnitTests
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("6547647654764764767657658658758765876532542"))
                     };
                 });
-            //services.AddHttpClient<Resources.Car.ApiClient>();
 
-            //var claims = new List<Claim>
-            //{
-            //    new Claim(ClaimTypes.Name, "samer"),
-            //    new Claim("FullName", "blabla"),
-            //    new Claim(ClaimTypes.Role, "mapi.sw.modelapi.samplemodel.carservice.*"),
-            //    new Claim(ClaimTypes.Role, "Supervisor"),
-            //};
 
-            //var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            //services.AddMapiMockCallContext(new ClaimsPrincipal(claimsIdentity));
-            //services.AddMapiCallContext();  
 
 
         }
@@ -68,6 +58,9 @@ namespace SW.CqApi.UnitTests
         {
             app.UseRouting();
             app.UseAuthorization();
+
+            app.UseHttpUserRequestContext();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

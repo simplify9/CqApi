@@ -1,5 +1,5 @@
 ﻿
-using SW.CqApi.SampleModel;
+using SW.CqApi.SampleWeb.Model;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
@@ -15,15 +15,19 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
     {
         private readonly RequestContext requestContext;
 
+<<<<<<< HEAD
         public Search(RequestContext requestContext)
+=======
+        public Search(RequestContext  requestContext)
+>>>>>>> origin/master
         {
             this.requestContext = requestContext;
         }
 
         async public Task<object> Handle(SearchyRequest searchyRequest, bool lookup = false, string searchPhrase = null)
         {
-            var user = requestContext.User; 
-            return new SearchyResponse<CarDto>(); 
+            var user = requestContext.User;
+            return new SearchyResponse<CarDto>();
         }
     }
 }

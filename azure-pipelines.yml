@@ -23,8 +23,6 @@ steps:
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
-    feedsToUse: 'select'
-    vstsFeed: 'e5fb2e9c-1207-48a4-8f7b-2e6b32308210'
 
 - task: DotNetCoreCLI@2
   displayName: Build
@@ -47,10 +45,11 @@ steps:
     nobuild: true
     versioningScheme: byBuildNumber
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet push'
+- task: NuGetCommand@2
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
   inputs:
-    command: push
-    publishVstsFeed: 'e5fb2e9c-1207-48a4-8f7b-2e6b32308210'
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'swnuget' 
 
