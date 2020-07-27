@@ -15,9 +15,9 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
 
     class Approve : ICommandHandler<int, ApproveCarCommand>
     {
-        private readonly IRequestContext requestContext;
+        private readonly RequestContext requestContext;
 
-        public Approve(IRequestContext requestContext)
+        public Approve(RequestContext requestContext)
         {
             this.requestContext = requestContext;
         }
