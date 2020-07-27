@@ -67,8 +67,7 @@ namespace SW.CqApi.Extensions
                 }
 
 
-                //string newPath = scheme + "://" + host + '/' + string.Join('/', pathArr);
-                string newPath = scheme + "://" + host + '/' + "cqapi/parcels/1";
+                string newPath = scheme + "://" + host + '/' + string.Join('/', pathArr);
 
                 context.Response.Redirect(newPath);
             });
