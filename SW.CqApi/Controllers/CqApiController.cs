@@ -65,8 +65,7 @@ namespace SW.CqApi
             [FromQuery(Name = "page")] int pageIndex,
             [FromQuery(Name = "count")] bool countRows,
             [FromQuery(Name = "search")] string searchPhrase,
-            [FromQuery(Name = "lookup")] bool lookup,
-            [FromRoute]string locale = null)
+            [FromQuery(Name = "lookup")] bool lookup)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "get");
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
@@ -78,8 +77,7 @@ namespace SW.CqApi
         public async Task<IActionResult> GetWithTokenAndKey(
             string resourceName,
             string token,
-            string key,
-            [FromRoute]string locale = null)
+            string key)
         {
 
             var handler = serviceDiscovery.ResolveHandler(resourceName, $"get/key/{token}");
@@ -97,9 +95,7 @@ namespace SW.CqApi
             [FromQuery(Name = "page")] int pageIndex,
             [FromQuery(Name = "search")] string searchPhrase,
             [FromQuery(Name = "count")] bool countRows,
-            [FromQuery(Name = "lookup")] bool lookup,
-            [FromRoute]string locale = null
-            )
+            [FromQuery(Name = "lookup")] bool lookup)
         {
 
             var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
@@ -117,7 +113,7 @@ namespace SW.CqApi
         }
 
         [HttpPost("{resourceName}")]
-        public async Task<IActionResult> Post(string resourceName, [FromBody] object body, [FromRoute]string locale = null)
+        public async Task<IActionResult> Post(string resourceName, [FromBody] object body)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "post");
             return await ExecuteHandler(handlerInfo, null, false, null, null, body);
@@ -126,7 +122,7 @@ namespace SW.CqApi
         }
 
         [HttpPost("{resourceName}/{token}")]
-        public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody] object body, [FromRoute]string locale = null)
+        public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody] object body)
         {
 
             if (serviceDiscovery.TryResolveHandler(resourceName, $"post/{token}", out var handlerInfo))
@@ -143,14 +139,14 @@ namespace SW.CqApi
         }
 
         [HttpPost("{resourceName}/{key}/{command}")]
-        public async Task<IActionResult> PostWithKeyAndCommandName(string resourceName, string key, string command, [FromBody] object body, [FromRoute]string locale = null)
+        public async Task<IActionResult> PostWithKeyAndCommandName(string resourceName, string key, string command, [FromBody] object body)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, $"post/key/{command}");
             return await ExecuteHandler(handlerInfo, null, false, null, key, body);
         }
 
         [HttpDelete("{resourceName}/{key}")]
-        public async Task<IActionResult> Delete(string resourceName, string key, [FromRoute]string locale = null)
+        public async Task<IActionResult> Delete(string resourceName, string key)
         {
             var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "delete/key");
             return await ExecuteHandler(handlerInfo, null, false, null, key, null);
