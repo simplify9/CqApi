@@ -26,7 +26,7 @@ namespace SW.CqApi.Extensions
             {
 
                 CqApiOptions options = (CqApiOptions)context.RequestServices.GetService(typeof(CqApiOptions));
-                IList<string> pathArr = new List<string>(context.Request.Path.Value.Split('/'));
+                IList<string> pathArr = new List<string>(context.Request.Path.Value.Split('/').Skip(1));
                 IList<string> segmented = new List<string>(pathArr.Take(pathArr.IndexOf(options.Prefix)));
 
                 if (segmented.Count == 0)
