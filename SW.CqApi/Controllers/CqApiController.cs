@@ -12,7 +12,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using Microsoft.AspNetCore.Server.IIS.Core;
-using SW.ObjectConversion;
 
 namespace SW.CqApi
 {
