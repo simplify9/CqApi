@@ -199,7 +199,7 @@ namespace SW.CqApi
                 }
                 catch (Exception ex)
                 {
-                    throw new BadInputFormat(ex);
+                    throw new BadInputFormatException(ex);
                 }
                 var request = GetFromQueryString(handlerInfo.ArgumentTypes[1]);
                 var result = await handlerInstance.Invoke(keyParam, request);
@@ -220,7 +220,7 @@ namespace SW.CqApi
                 }
                 catch (Exception ex)
                 {
-                    throw new BadInputFormat(ex);
+                    throw new BadInputFormatException(ex);
                 }
                 if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
                 var result = await handlerInstance.Invoke(typedParam);
@@ -239,7 +239,7 @@ namespace SW.CqApi
                 }
                 catch (Exception ex)
                 {
-                    throw new BadInputFormat(ex);
+                    throw new BadInputFormatException(ex);
                 }
 
                 if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
@@ -256,7 +256,7 @@ namespace SW.CqApi
                 }
                 catch (Exception ex)
                 {
-                    throw new BadInputFormat(ex);
+                    throw new BadInputFormatException(ex);
                 }
                 var result = await handlerInstance.Invoke(keyParam, lookup);
                 if (result == null) return NotFound();
@@ -272,7 +272,7 @@ namespace SW.CqApi
                 }
                 catch (Exception ex)
                 {
-                    throw new BadInputFormat(ex);
+                    throw new BadInputFormatException(ex);
                 }
                 var result = await handlerInstance.Invoke(keyParam);
                 return Accepted();

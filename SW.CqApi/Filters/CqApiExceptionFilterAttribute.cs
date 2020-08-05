@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SW.PrimitiveTypes;
 using System;
 using System.Collections.Generic;
@@ -12,24 +14,34 @@ namespace SW.CqApi
     {
         public override Task OnExceptionAsync(ExceptionContext context)
         {
-            if (context.Exception is CqApiNotFoundException)
-                context.Result = new NotFoundObjectResult(context.Exception.Message);
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<CqApiExceptionFilterAttribute>>();
 
-            else if (context.Exception is CqApiUnauthorizedException)
-
-                context.Result = new UnauthorizedResult();
-
-            else if (context.Exception is CqApiForbidException)
-
-                context.Result = new UnauthorizedResult();
-
-            else if (context.Exception is SWException)
+            if (context.Exception is SWException)
             {
-                context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
-                context.Result = new BadRequestObjectResult(context.ModelState);
+                if (context.Exception is SWNotFoundException)
+                    context.Result = new NotFoundObjectResult(context.Exception.Message);
+
+                else if (context.Exception is SWForbiddenException)
+
+                    context.Result = new UnauthorizedResult();
+
+                else if (context.Exception is SWUnauthorizedException)
+
+                    context.Result = new UnauthorizedResult();
+
+                else if (context.Exception is SWException)
+                {
+                    context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
+                    context.Result = new BadRequestObjectResult(context.ModelState);
+                }
+
+                logger.LogWarning(context.Exception, string.Empty);
+            }
+            else
+            {
+                logger.LogError(context.Exception, string.Empty);
             }
 
-            
             return base.OnExceptionAsync(context);
         }
     }

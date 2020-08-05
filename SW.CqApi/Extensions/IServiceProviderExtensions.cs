@@ -30,7 +30,7 @@ namespace SW.CqApi
 
                 if (!requestContext.IsValid)
 
-                    throw new CqApiUnauthorizedException();
+                    throw new SWUnauthorizedException();
                 
                 if (protectAttribute.RequireRole)
                 {
@@ -42,7 +42,7 @@ namespace SW.CqApi
 
                     if (!requestContext.User.Claims.Any(c => c.Subject.RoleClaimType  == ClaimTypes.Role && requiredRoles.Contains(c.Value, StringComparer.OrdinalIgnoreCase)))
 
-                        throw new CqApiForbidException();
+                        throw new SWForbiddenException();
                 }
             }
 

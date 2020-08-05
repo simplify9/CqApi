@@ -135,14 +135,5 @@ namespace SW.CqApi.UnitTests
             var httpResponseMessage = await httpClient.PostAsync("cqapi/cars/protectedget", new ProtectedGetCommand());
             Assert.IsTrue(httpResponseMessage.StatusCode == System.Net.HttpStatusCode.Unauthorized);
         }
-
-
-
-
-
-
-
-
-
     }
 }
