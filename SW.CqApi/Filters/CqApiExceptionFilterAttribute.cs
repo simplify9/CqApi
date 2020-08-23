@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SW.PrimitiveTypes;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SW.CqApi
@@ -22,14 +19,12 @@ namespace SW.CqApi
                     context.Result = new NotFoundObjectResult(context.Exception.Message);
 
                 else if (context.Exception is SWForbiddenException)
-
                     context.Result = new UnauthorizedResult();
 
                 else if (context.Exception is SWUnauthorizedException)
-
                     context.Result = new UnauthorizedResult();
 
-                else if (context.Exception is SWException)
+                else 
                 {
                     context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
                     context.Result = new BadRequestObjectResult(context.ModelState);
@@ -38,9 +33,7 @@ namespace SW.CqApi
                 logger.LogWarning(context.Exception, string.Empty);
             }
             else
-            {
                 logger.LogError(context.Exception, string.Empty);
-            }
 
             return base.OnExceptionAsync(context);
         }
