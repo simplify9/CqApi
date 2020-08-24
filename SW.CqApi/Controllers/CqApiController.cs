@@ -12,6 +12,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using Microsoft.AspNetCore.Server.IIS.Core;
+using SW.HttpExtensions;
 
 namespace SW.CqApi
 {
@@ -186,7 +187,7 @@ namespace SW.CqApi
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
             {
-                var request = GetFromQueryString(handlerInfo.ArgumentTypes[0]);
+                var request = Request.Query.GetInstance(handlerInfo.ArgumentTypes[0]);
                 var result = await handlerInstance.Invoke(request);
                 return Ok(result);
             }
@@ -201,7 +202,7 @@ namespace SW.CqApi
                 {
                     throw new BadInputFormatException(ex);
                 }
-                var request = GetFromQueryString(handlerInfo.ArgumentTypes[1]);
+                var request = Request.Query.GetInstance(handlerInfo.ArgumentTypes[1]);
                 var result = await handlerInstance.Invoke(keyParam, request);
                 return Ok(result);
             }
@@ -283,31 +284,31 @@ namespace SW.CqApi
             }
         }
 
-        object GetFromQueryString(Type type)
-        {
-            try
-            {
-                var obj = Activator.CreateInstance(type);
-                var properties = type.GetProperties();
-                foreach (var property in properties)
-                {
-                    var valueAsString = Request.Query[property.Name].FirstOrDefault();
-                    var value = valueAsString.ConvertValueToType(property.PropertyType);
+        //object GetFromQueryString(Type type)
+        //{
+        //    try
+        //    {
+        //        var obj = Activator.CreateInstance(type);
+        //        var properties = type.GetProperties();
+        //        foreach (var property in properties)
+        //        {
+        //            var valueAsString = Request.Query[property.Name].FirstOrDefault();
+        //            var value = valueAsString.ConvertValueToType(property.PropertyType);
 
-                    if (value == null)
-                        continue;
+        //            if (value == null)
+        //                continue;
 
-                    property.SetValue(obj, value, null);
-                }
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                throw new SWException($"Error constructing type: '{type.Name}' from parameters. {ex.Message}");
+        //            property.SetValue(obj, value, null);
+        //        }
+        //        return obj;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new SWException($"Error constructing type: '{type.Name}' from parameters. {ex.Message}");
 
-            }
+        //    }
 
-        }
+        //}
 
     }
 }

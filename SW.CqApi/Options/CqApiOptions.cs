@@ -44,7 +44,7 @@ namespace SW.CqApi
         /// The controller prefix, how the API is accessed. 
         /// Do not add a trailing slash.
         /// </summary>
-        public string Prefix { get; set; } = "cqapi";
+        public string UrlPrefix { get; set; } = "cqapi";
         /// <summary>
         /// Any resource with its key found here, will have its description replaced with the value
         /// </summary>
@@ -67,6 +67,8 @@ namespace SW.CqApi
         /// Get api versioning information prefix (Eg: v2.1)
         /// </summary>
         public bool GetVersion { get; set; }
+
+        public string RolePrefix { get; set; }
 
         public CqApiOptions()
         {
