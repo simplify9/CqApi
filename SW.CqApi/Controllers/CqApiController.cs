@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using SW.PrimitiveTypes;
 using Newtonsoft.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using System.Reflection;
-using Microsoft.AspNetCore.Server.IIS.Core;
 using SW.HttpExtensions;
 
 namespace SW.CqApi
@@ -20,7 +17,7 @@ namespace SW.CqApi
     [CqApiExceptionFilter]
     [Route("{prefix:cqapiPrefix}")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    //[Authorize(AuthenticationSchemes = "Bearer")]
     [AllowAnonymous]
     public class CqApiController : ControllerBase
     {
