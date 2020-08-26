@@ -17,7 +17,7 @@ namespace SW.CqApi
     [CqApiExceptionFilter]
     [Route("{prefix:cqapiPrefix}")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [AllowAnonymous]
     public class CqApiController : ControllerBase
     {

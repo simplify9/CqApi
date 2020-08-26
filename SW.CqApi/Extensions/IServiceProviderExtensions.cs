@@ -21,8 +21,8 @@ namespace SW.CqApi
                 Instance = serviceProvider.GetService(handlerInfo.HandlerType)
             };
 
-            if (handlerInstance.Instance is null) 
-                
+            if (handlerInstance.Instance is null)
+
                 throw new SWException($"Could not find required service {handlerInfo.Key} for resource {handlerInfo.Resource}.");
 
             CqApiOptions options = serviceProvider.GetService<CqApiOptions>();
@@ -36,17 +36,19 @@ namespace SW.CqApi
                 if (!requestContext.IsValid)
 
                     throw new SWUnauthorizedException();
-                
+
                 if (protectAttribute.RequireRole)
                 {
-                    var requiredRoles = new string[] 
-                    { 
-                        $"{handlerInfo.Resource}.{handlerInfo.HandlerType.Name}", 
-                        $"{handlerInfo.Resource}.*" 
+
+                    var prefix = string.IsNullOrWhiteSpace(options.RolePrefix) ? "handlerInfo.Resource" : $"{options.RolePrefix}.{handlerInfo.Resource}";
+
+                    var requiredRoles = new string[]
+                    {
+                        $"{prefix}.{handlerInfo.HandlerType.Name}",
+                        $"{prefix}.*"
                     };
 
-                    if (!requestContext.User.Claims.Any(c => c.Subject.RoleClaimType  == ClaimTypes.Role && requiredRoles.Contains(c.Value, StringComparer.OrdinalIgnoreCase)))
-
+                    if (!requestContext.User.Claims.Any(c => c.Subject.RoleClaimType == ClaimTypes.Role && requiredRoles.Contains(c.Value, StringComparer.OrdinalIgnoreCase)))
                         throw new SWForbiddenException();
                 }
             }
