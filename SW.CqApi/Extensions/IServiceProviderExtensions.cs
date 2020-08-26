@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW.PrimitiveTypes;
+using SW.PrimitiveTypes.Contracts.CqApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,11 @@ namespace SW.CqApi
                 
                 throw new SWException($"Could not find required service {handlerInfo.Key} for resource {handlerInfo.Resource}.");
 
-            if (handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>() is ProtectAttribute protectAttribute)
+            CqApiOptions options = serviceProvider.GetService<CqApiOptions>();
+            var protectAttribute = handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>();
+            var unprotectAttribute = handlerInfo.HandlerType.GetCustomAttribute<UnprotectAttribute>();
+
+            if ((options.ProtectAll && unprotectAttribute == null) || protectAttribute is ProtectAttribute)
             {
                 var requestContext = serviceProvider.GetRequiredService<RequestContext>();
 
