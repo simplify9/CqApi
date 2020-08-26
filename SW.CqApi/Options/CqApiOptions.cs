@@ -58,15 +58,10 @@ namespace SW.CqApi
         /// </summary>
         public TypeMaps Maps { get; }
 
-
         /// <summary>
-        /// Get localization information prefix (Eg: en-us)
+        /// Protect all APIs by default. To unprotect specific APIs, use UnProtect attribute.
         /// </summary>
-        public bool GetLocale { get; set; }
-        /// <summary>
-        /// Get api versioning information prefix (Eg: v2.1)
-        /// </summary>
-        public bool GetVersion { get; set; }
+        public bool ProtectAll { get; set; }
 
         public CqApiOptions()
         {
