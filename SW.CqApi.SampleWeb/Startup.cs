@@ -45,6 +45,7 @@ namespace SW.CqApi.SampleWeb
                     config =>
                     {
                         config.ResourceDescriptions.Add("Parcels", "Description test");
+                        config.ProtectAll = true;
                     }
                 );
             services.AddRazorPages();
