@@ -25,7 +25,7 @@ namespace SW.CqApi
 
                 throw new SWException($"Could not find required service {handlerInfo.Key} for resource {handlerInfo.Resource}.");
 
-            CqApiOptions options = serviceProvider.GetService<CqApiOptions>();
+            CqApiOptions options = serviceProvider.GetService<CqApiOptions>() ?? new CqApiOptions();
             var protectAttribute = handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>();
             var unprotectAttribute = handlerInfo.HandlerType.GetCustomAttribute<UnprotectAttribute>();
 
@@ -37,7 +37,7 @@ namespace SW.CqApi
 
                     throw new SWUnauthorizedException();
 
-                if (protectAttribute.RequireRole)
+                if (protectAttribute?.RequireRole ?? false)
                 {
 
                     var prefix = string.IsNullOrWhiteSpace(options.RolePrefix) ? "handlerInfo.Resource" : $"{options.RolePrefix}.{handlerInfo.Resource}";

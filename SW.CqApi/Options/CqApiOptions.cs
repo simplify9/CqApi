@@ -69,22 +69,8 @@ namespace SW.CqApi
         {
 
             Maps = new TypeMaps();
+            AuthOptions = new CqApiAuthOptions();
             ResourceDescriptions = new ResourceDescriptions();
-            var objectExample = new OpenApiObject();
-            objectExample.TryAdd("foo", new OpenApiInteger(42));
-            objectExample.TryAdd("bar", new OpenApiInteger(23));
-            objectExample.TryAdd("baz", new OpenApiInteger(1337));
-            Maps.AddMap<Dictionary<string, int>, object>(objectExample);
-
-            objectExample.Remove("foo");
-            objectExample.Remove("bar");
-            objectExample.Remove("baz");
-
-            objectExample.TryAdd("foo", new OpenApiString("lorem ipsum"));
-            objectExample.TryAdd("bar", new OpenApiString("John Doe"));
-            objectExample.TryAdd("baz", new OpenApiString("54"));
-
-            Maps.AddMap<Dictionary<string, string>, object>(objectExample);
         }
 
 
