@@ -45,6 +45,7 @@ namespace SW.CqApi.SampleWeb
                     config =>
                     {
                         config.ResourceDescriptions.Add("Parcels", "Description test");
+                        config.ProtectAll = true;
                     }
                 );
             services.AddRazorPages();
@@ -62,16 +63,14 @@ namespace SW.CqApi.SampleWeb
 
                     options.TokenValidationParameters = new TokenValidationParameters()
                     {
-                        ValidIssuer = "cqapi",
-                        ValidAudience = "cqapi",
-
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("6547647654764764767657658658758765876532542"))
+                        ValidIssuer = Configuration["Token:Issuer"],
+                        ValidAudience = Configuration["Token:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Token:Key"]))
                     };
-
                 });
 
-            services.AddScoped<RequestContext>(); 
-
+            services.AddScoped<RequestContext>();
+            services.AddJwtTokenParameters(); 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -83,8 +82,7 @@ namespace SW.CqApi.SampleWeb
             }
 
             app.UseHttpsRedirection();
-            app.UseHttpUserRequestContext();
-            app.UseCqApi();
+            //app.UseCqApi();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
@@ -96,8 +94,6 @@ namespace SW.CqApi.SampleWeb
                 c.SwaggerEndpoint("/cqapi/swagger.json", "My API V1");
 
             });
-
-
 
             app.Use(async (context, next) =>
             {
@@ -113,9 +109,7 @@ namespace SW.CqApi.SampleWeb
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-
             });
-
         }
     }
 }

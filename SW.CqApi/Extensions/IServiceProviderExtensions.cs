@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW.PrimitiveTypes;
+using SW.PrimitiveTypes.Contracts.CqApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,28 +21,34 @@ namespace SW.CqApi
                 Instance = serviceProvider.GetService(handlerInfo.HandlerType)
             };
 
-            if (handlerInstance.Instance is null) 
-                
+            if (handlerInstance.Instance is null)
+
                 throw new SWException($"Could not find required service {handlerInfo.Key} for resource {handlerInfo.Resource}.");
 
-            if (handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>() is ProtectAttribute protectAttribute)
+            CqApiOptions options = serviceProvider.GetService<CqApiOptions>();
+            var protectAttribute = handlerInfo.HandlerType.GetCustomAttribute<ProtectAttribute>();
+            var unprotectAttribute = handlerInfo.HandlerType.GetCustomAttribute<UnprotectAttribute>();
+
+            if ((options.ProtectAll && unprotectAttribute == null) || protectAttribute is ProtectAttribute)
             {
                 var requestContext = serviceProvider.GetRequiredService<RequestContext>();
 
                 if (!requestContext.IsValid)
 
                     throw new SWUnauthorizedException();
-                
+
                 if (protectAttribute.RequireRole)
                 {
-                    var requiredRoles = new string[] 
-                    { 
-                        $"{handlerInfo.Resource}.{handlerInfo.HandlerType.Name}", 
-                        $"{handlerInfo.Resource}.*" 
+
+                    var prefix = string.IsNullOrWhiteSpace(options.RolePrefix) ? "handlerInfo.Resource" : $"{options.RolePrefix}.{handlerInfo.Resource}";
+
+                    var requiredRoles = new string[]
+                    {
+                        $"{prefix}.{handlerInfo.HandlerType.Name}",
+                        $"{prefix}.*"
                     };
 
-                    if (!requestContext.User.Claims.Any(c => c.Subject.RoleClaimType  == ClaimTypes.Role && requiredRoles.Contains(c.Value, StringComparer.OrdinalIgnoreCase)))
-
+                    if (!requestContext.User.Claims.Any(c => c.Subject.RoleClaimType == ClaimTypes.Role && requiredRoles.Contains(c.Value, StringComparer.OrdinalIgnoreCase)))
                         throw new SWForbiddenException();
                 }
             }
