@@ -40,7 +40,7 @@ namespace SW.CqApi
                 if (protectAttribute?.RequireRole ?? false)
                 {
 
-                    var prefix = string.IsNullOrWhiteSpace(options.RolePrefix) ? "handlerInfo.Resource" : $"{options.RolePrefix}.{handlerInfo.Resource}";
+                    var prefix = string.IsNullOrWhiteSpace(options.RolePrefix) ? handlerInfo.Resource : $"{options.RolePrefix}.{handlerInfo.Resource}";
 
                     var requiredRoles = new string[]
                     {
