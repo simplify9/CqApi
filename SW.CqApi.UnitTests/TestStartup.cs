@@ -59,7 +59,7 @@ namespace SW.CqApi.UnitTests
             app.UseRouting();
             app.UseAuthorization();
 
-            app.UseHttpUserRequestContext();
+            app.UseHttpAsRequestContext();
 
             app.UseEndpoints(endpoints =>
             {

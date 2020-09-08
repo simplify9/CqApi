@@ -87,7 +87,7 @@ namespace SW.CqApi.SampleWeb
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseHttpUserRequestContext();
+            app.UseHttpAsRequestContext();
 
             app.UseSwaggerUI(c =>
             {
