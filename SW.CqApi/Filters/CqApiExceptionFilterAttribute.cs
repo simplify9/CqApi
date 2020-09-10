@@ -24,7 +24,14 @@ namespace SW.CqApi
                 else if (context.Exception is SWUnauthorizedException)
                     context.Result = new UnauthorizedResult();
 
-                else 
+                else if (context.Exception is SWValidationException validationException)
+                {
+                    foreach (var kvp in validationException.Validations)
+                        context.ModelState.AddModelError(kvp.Key, kvp.Value);
+
+                    context.Result = new BadRequestObjectResult(context.ModelState);
+                }
+                else
                 {
                     context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
                     context.Result = new BadRequestObjectResult(context.ModelState);
