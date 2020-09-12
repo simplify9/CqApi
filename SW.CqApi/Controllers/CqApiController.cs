@@ -206,8 +206,7 @@ namespace SW.CqApi
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
             {
                 var result = await handlerInstance.Invoke();
-                if (result == null) return NoContent();
-                return Ok(result);
+                return HandleResult(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<>))
             {
@@ -222,8 +221,7 @@ namespace SW.CqApi
                 }
                 if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
                 var result = await handlerInstance.Invoke(typedParam);
-                if (result == null) return NoContent();
-                return Ok(result);
+                return HandleResult(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<,>))
             {
@@ -242,8 +240,7 @@ namespace SW.CqApi
 
                 if (!await ValidateInput(typedParam)) return BadRequest(ModelState);
                 var result = await handlerInstance.Invoke(keyParam, typedParam);
-                if (result == null) return NoContent();
-                return Ok(result);
+                return HandleResult(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IGetHandler<>))
             {
@@ -281,32 +278,21 @@ namespace SW.CqApi
             }
         }
 
-        //object GetFromQueryString(Type type)
-        //{
-        //    try
-        //    {
-        //        var obj = Activator.CreateInstance(type);
-        //        var properties = type.GetProperties();
-        //        foreach (var property in properties)
-        //        {
-        //            var valueAsString = Request.Query[property.Name].FirstOrDefault();
-        //            var value = valueAsString.ConvertValueToType(property.PropertyType);
-
-        //            if (value == null)
-        //                continue;
-
-        //            property.SetValue(obj, value, null);
-        //        }
-        //        return obj;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new SWException($"Error constructing type: '{type.Name}' from parameters. {ex.Message}");
-
-        //    }
-
-        //}
-
+        IActionResult HandleResult(object result)
+        {
+            if (result is IUnderProcessing underProcessing)
+            {
+                return Accepted(underProcessing.Uri);
+            }
+            else if (result is IResultWithHeaders resultWithHeaders)
+            {
+                foreach (var kvp in resultWithHeaders.Headers)
+                    Response.Headers.Add(kvp.Key, kvp.Value);
+                return Ok(result);
+            }
+            else if (result == null) return NoContent();
+            return Ok(result);
+        }
     }
 }
 
