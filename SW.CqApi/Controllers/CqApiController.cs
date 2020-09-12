@@ -288,7 +288,7 @@ namespace SW.CqApi
             {
                 foreach (var kvp in resultWithHeaders.Headers)
                     Response.Headers.Add(kvp.Key, kvp.Value);
-                return Ok(result);
+                return Ok(resultWithHeaders.Result);
             }
             else if (result == null) return NoContent();
             return Ok(result);
