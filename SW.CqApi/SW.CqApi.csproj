@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.2.3" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
     <PackageReference Include="Scrutor" Version="3.2.2" />
-    <PackageReference Include="SimplyWorks.HttpExtensions" Version="2.0.18" />
+    <PackageReference Include="SimplyWorks.HttpExtensions" Version="2.0.19" />
   </ItemGroup>
 
   <ItemGroup>

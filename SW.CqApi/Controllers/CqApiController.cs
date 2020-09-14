@@ -290,7 +290,9 @@ namespace SW.CqApi
                     Response.Headers.Add(kvp.Key, kvp.Value);
                 return Ok(resultWithHeaders.Result);
             }
-            else if (result == null) return NoContent();
+            else if (result == null) 
+                return NoContent();
+
             return Ok(result);
         }
     }
