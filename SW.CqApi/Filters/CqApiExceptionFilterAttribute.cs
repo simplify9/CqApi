@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SW.PrimitiveTypes;
+using System;
 using System.Threading.Tasks;
 
 namespace SW.CqApi
@@ -40,7 +41,7 @@ namespace SW.CqApi
                         var messageObject = JsonConvert.DeserializeObject(message);
                         context.Result = new BadRequestObjectResult(messageObject);
                     }
-                    catch (System.Exception)
+                    catch (Exception)
                     {
                         context.Result = new BadRequestObjectResult(message);
                     }
