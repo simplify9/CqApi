@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SW.PrimitiveTypes;
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SW.CqApi
@@ -38,7 +38,7 @@ namespace SW.CqApi
                     string message = context.Exception.Message;
                     try
                     {
-                        var messageObject = JsonConvert.DeserializeObject(message);
+                        var messageObject = JsonSerializer.Deserialize(message, null);
                         context.Result = new BadRequestObjectResult(messageObject);
                     }
                     catch (Exception)
