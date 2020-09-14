@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SW.PrimitiveTypes;
 using System.Threading.Tasks;
 
@@ -33,8 +34,17 @@ namespace SW.CqApi
                 }
                 else
                 {
+                    string message = context.Exception.Message;
+                    try
+                    {
+                        var messageObject = JsonConvert.DeserializeObject(message);
+                        context.Result = new BadRequestObjectResult(messageObject);
+                    }
+                    catch (System.Exception)
+                    {
+                        context.Result = new BadRequestObjectResult(message);
+                    }
                     //context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
-                    context.Result = new BadRequestObjectResult(context.Exception.Message);
                 }
 
                 logger.LogWarning(context.Exception, string.Empty);
