@@ -231,7 +231,6 @@ namespace SW.CqApi
                 {
                     keyParam = key.ConvertValueToType(handlerInfo.ArgumentTypes[0]);
                     typedParam = JsonConvert.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
-
                 }
                 catch (Exception ex)
                 {
@@ -280,17 +279,28 @@ namespace SW.CqApi
 
         IActionResult HandleResult(object result)
         {
-            if (result is IUnderProcessing underProcessing)
+            if (result is ICqApiResult cqApiResult)
             {
-                return Accepted(underProcessing.Uri);
-            }
-            else if (result is IResultWithHeaders resultWithHeaders)
-            {
-                foreach (var kvp in resultWithHeaders.Headers)
+                foreach (var kvp in cqApiResult.Headers)
                     Response.Headers.Add(kvp.Key, kvp.Value);
-                return Ok(resultWithHeaders.Result);
+
+                if (cqApiResult.Status == CqApiResultStatus.UnderProcessing)
+                    return Accepted(cqApiResult.Result.ToString());
+                else if (cqApiResult.Result == null)
+                    return NoContent();
+                else if (cqApiResult.Result is string stringResult)
+                    return new ContentResult
+                    {
+                        StatusCode = 200,
+                        Content = stringResult,
+                        ContentType = cqApiResult.ContentType
+                    };
+                else
+                    Ok(cqApiResult.Result);
+                    //StatusCode( cqApiResult.Result)
+
             }
-            else if (result == null) 
+            else if (result == null)
                 return NoContent();
 
             return Ok(result);
