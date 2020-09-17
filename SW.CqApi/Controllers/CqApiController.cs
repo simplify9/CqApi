@@ -291,13 +291,12 @@ namespace SW.CqApi
                 else if (cqApiResult.Result is string stringResult)
                     return new ContentResult
                     {
-                        StatusCode = 200,
+                        StatusCode = cqApiResult.Status == CqApiResultStatus.Ok ? 200 : 400,
                         Content = stringResult,
-                        ContentType = cqApiResult.ContentType
+                        ContentType = cqApiResult.ContentType,
                     };
                 else
                     Ok(cqApiResult.Result);
-                    //StatusCode( cqApiResult.Result)
 
             }
             else if (result == null)

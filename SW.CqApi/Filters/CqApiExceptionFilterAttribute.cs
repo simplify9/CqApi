@@ -35,17 +35,7 @@ namespace SW.CqApi
                 }
                 else
                 {
-                    string message = context.Exception.Message;
-                    try
-                    {
-                        var messageObject = JsonSerializer.Deserialize(message, null);
-                        context.Result = new BadRequestObjectResult(messageObject);
-                    }
-                    catch (Exception)
-                    {
-                        context.Result = new BadRequestObjectResult(message);
-                    }
-                    //context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
+                    context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
                 }
 
                 logger.LogWarning(context.Exception, string.Empty);
