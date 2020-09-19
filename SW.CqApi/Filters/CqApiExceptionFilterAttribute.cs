@@ -36,6 +36,7 @@ namespace SW.CqApi
                 else
                 {
                     context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
+                    context.Result = new BadRequestObjectResult(context.ModelState);
                 }
 
                 logger.LogWarning(context.Exception, string.Empty);
