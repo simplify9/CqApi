@@ -86,12 +86,10 @@ namespace SW.CqApi
 
         public HandlerInfo ResolveHandler(string resourceName, string handlerKey)
         {
-
             if (TryResolveHandler(resourceName, handlerKey, out var handlerInfo))
                 return handlerInfo;
 
-            throw new SWException($"Could not resolve {handlerKey} of resource {resourceName}.");
-
+            throw new SWNotFoundException($"{resourceName}/{handlerKey}");
         }
 
         public IEnumerable<string> GetRoles()
