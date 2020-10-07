@@ -154,9 +154,10 @@ namespace SW.CqApi
                     apiOperation.Tags.Add(tag);
                     var returns = handler.Value.HandlerType.GetCustomAttributes<ReturnsAttribute>();
                     var protect = handler.Value.HandlerType.GetCustomAttribute<ProtectAttribute>();
+                    var unprotect = handler.Value.HandlerType.GetCustomAttribute<UnprotectAttribute>();
                     apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method, returns, components, interfaceType.Name, options.Maps);
 
-                    if (protect != null){
+                    if (protect != null || (options.ProtectAll && unprotect == null )){
                         apiOperation.AddSecurity($"{res.Key}.{handler.Value.HandlerType.Name.ToLower()}", components);
                     }
 
