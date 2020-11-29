@@ -18,11 +18,9 @@ namespace SW.CqApi
             this.options = options;
         }
 
-
-
         public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
         {
-            var controllerPrefix = options.UrlPrefix?? "cqapi";
+            var controllerPrefix = options.UrlPrefix ?? "cqapi";
             var prefix = values["prefix"].ToString();
             if (prefix.ToLower() == controllerPrefix) return true;
             return false;

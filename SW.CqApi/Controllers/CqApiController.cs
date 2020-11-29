@@ -119,18 +119,14 @@ namespace SW.CqApi
         [HttpPost("{resourceName}/{token}")]
         public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody] object body)
         {
-
             if (serviceDiscovery.TryResolveHandler(resourceName, $"post/{token}", out var handlerInfo))
-
                 return await ExecuteHandler(handlerInfo, null, body);
 
             else if (serviceDiscovery.TryResolveHandler(resourceName, "post/key", out handlerInfo))
-
                 return await ExecuteHandler(handlerInfo, token, body);
 
             else
                 return NotFound();
-
         }
 
         [HttpPost("{resourceName}/{key}/{command}")]
@@ -287,8 +283,13 @@ namespace SW.CqApi
 
                 if (cqApiResult.Status == CqApiResultStatus.UnderProcessing)
                     return Accepted(cqApiResult.Result.ToString());
+
+                else if (cqApiResult.Status == CqApiResultStatus.ChangedLocation)
+                    return RedirectPermanent(cqApiResult.Result.ToString());
+
                 else if (cqApiResult.Result == null)
                     return NoContent();
+
                 else if (cqApiResult.Result is string stringResult)
                     return new ContentResult
                     {
@@ -296,6 +297,7 @@ namespace SW.CqApi
                         Content = stringResult,
                         ContentType = cqApiResult.ContentType,
                     };
+
                 else
                     Ok(cqApiResult.Result);
 
