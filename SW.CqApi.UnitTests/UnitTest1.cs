@@ -84,7 +84,7 @@ namespace SW.CqApi.UnitTests
             var httpClient = server.CreateClient();
             var httpResponseMessage = await httpClient.GetAsync("cqapi/cars/search?page=12");
             var rs = await httpResponseMessage.Content.ReadAsStringAsync();
-            Assert.AreEqual<string>("page=12", rs);
+            Assert.AreEqual<string>("count=True&page=12", rs);
         }
 
         [TestMethod]

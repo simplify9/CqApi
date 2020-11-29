@@ -33,7 +33,7 @@ namespace SW.CqApi.SampleWeb
             {
                 config.ResourceDescriptions.Add("Parcels", "Description test");
                 config.ProtectAll = true;
-                config.UrlPrefix = string.Empty;  
+                config.UrlPrefix = "api";  
             });
 
             services.AddRazorPages();
