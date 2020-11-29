@@ -252,7 +252,7 @@ namespace SW.CqApi
                     return NotFound();
                 if (lookup) 
                     return StatusCode(206, result);
-                return Ok(result);
+                return HandleResult(result);
             }
             else if (handlerInfo.NormalizedInterfaceType == typeof(IDeleteHandler<>))
             {
