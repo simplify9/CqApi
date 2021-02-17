@@ -22,10 +22,10 @@ namespace SW.CqApi.Utils
 
             if (parameter.GenericTypeArguments.Length > 0)
             {
-                // foreach(var genArg in parameter.GenericTypeArguments)
-                // {
-                //     ExplodeParameter(genArg, components, maps);
-                // }
+                foreach(var genArg in parameter.GenericTypeArguments)
+                {
+                    ExplodeParameter(genArg, components, maps);
+                }
                 schema.Type = "object";
                 name = parameter.GetGenericName();
             }
