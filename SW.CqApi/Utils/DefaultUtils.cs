@@ -16,6 +16,11 @@ namespace SW.CqApi.Utils
             var schema = new OpenApiSchema();
             var stringSchema = typeof(string).GetJsonType().GetOpenApiSchema();
 
+            if (type == typeof(DateTime))
+            {
+                schema.Title = "DateTime";
+                schema.Type = "string";
+            }
             if(type == typeof(SearchyRequest))
             {
                 schema.Title = "Searchy Request";

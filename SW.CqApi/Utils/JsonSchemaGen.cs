@@ -12,6 +12,7 @@ namespace SW.CqApi.Utils
         public static JsonSchema GetJsonType(this Type t)
         {
             JsonSchemaGenerator gen = new JsonSchemaGenerator();
+            gen.UndefinedSchemaIdHandling = UndefinedSchemaIdHandling.UseTypeName;
             JsonSchema json = gen.Generate(t.SimplifyType());
             return json;
         }
@@ -43,8 +44,11 @@ namespace SW.CqApi.Utils
             if(json.Properties != null)
             {
                 var props = new Dictionary<string, OpenApiSchema>();
-                foreach(var prop in json.Properties)
+                foreach (var prop in json.Properties)
+                {
+                    if (prop.Value.Id == json.Id || prop.Value.Items != null && prop.Value.Items.Count > 0 && prop.Value.Items[0].Id == json.Id) continue;
                     props[prop.Key] = prop.Value.GetOpenApiSchema();
+                }
                 op.Properties = props;
             }
 
