@@ -6,7 +6,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using SW.PrimitiveTypes;
 
 namespace SW.CqApi.Utils
 {
@@ -74,7 +76,8 @@ namespace SW.CqApi.Utils
                 Dictionary<string, OpenApiSchema> props = new Dictionary<string, OpenApiSchema>();
                 foreach(var prop in parameter.GetProperties())
                 {
-                    if (prop.PropertyType == parameter) continue;
+                    
+                    if (prop.GetCustomAttribute<IgnoreMemberAttribute>() != null || prop.PropertyType == parameter) continue;
                     props[prop.Name] = ExplodeParameter(prop.PropertyType, components, maps);
                 }
 

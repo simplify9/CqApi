@@ -51,6 +51,7 @@ namespace SW.CqApi.Utils
             var openApiParams = new List<OpenApiParameter>();
             foreach(var parameter in parameters)
             {
+                if (parameter.GetCustomAttribute<IgnoreMemberAttribute>() != null) continue;
                 var schemaParam = TypeUtils.ExplodeParameter(parameter.ParameterType, components, maps);
                 if (schemaParam.Properties.Count > 0)
                 {
