@@ -17,8 +17,7 @@ Resources:
  -THE HANDLERS
  ```
 
-_CqApi_ automatically uses the folder structure to determine the route of the handlers. With this, you no longer have to build controllers. All that's left for the user to do is to have the right namespace for the handler, and this is often handled through the IDE and the folder structure of the files.
-Through this design, all the boilerplate of HTTP methods is handled in the background. 
+With this folder structure, the routes in the system will be apparent at a moment's glance with the added of benefit of the namespaces being correct automatically.
 
 ## Setting up _CqApi_
 _CqApi_ provides the following routes to be injected into the master controller:
