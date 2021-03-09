@@ -21,6 +21,7 @@ _CqApi_ automatically uses the folder structure to determine the route of the ha
 Through this design, all the boilerplate of HTTP methods is handled in the background. 
 
 ## Setting up _CqApi_
+_CqApi_ provides the following routes to be injected into the master controller:
 
 - `ICommandHandler`: POST @ /resourceName (No body)
 
