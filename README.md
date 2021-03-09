@@ -22,6 +22,23 @@ Through this design, all the boilerplate of HTTP methods is handled in the backg
 
 ## Setting up _CqApi_
 
+- `ICommandHandler`: POST @ /resourceName (No body)
+
+- `ICommandHandler<T>`: POST @ /resourceName (where body is of type T, for deserialization purposes)
+
+- `ICommandHandler<TKey, TBody>`: POST @ /resourceName/key (where key is of type TKey and the body of type TBody)
+
+- `IGetHandler<T>`: GET @ /resourceName/key (where key of type T)
+
+- `IQueryHandler`: GET @ /resourceName
+
+- `IQueryHandler<TRequest>`: GET @ /resourceName?QUERYPARAMS (where query params get deserialized to type TRequest)
+
+- `IQueryHandler<TKey, TRequest>`: GET @ /resourceName/key?QUERYPARAMS (where query params gets deserialized into TRequest, and key to TKey)
+
+- `IDeleteHandler<TKey>`: DELETE @ /resourceName/key 
+
+- `ISearchyHandler`: GET @ /resourceName, where an object formed by the sorts and filters in the query params to make typical search cases convenient.
 
 #### Options to pass _CqApi_
 
