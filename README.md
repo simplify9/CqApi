@@ -60,9 +60,10 @@ public class CqApiOptions
         /// </summary>
         public bool ProtectAll { get; set; }
 
-        public string RolePrefix { get; set; } ```
+        public string RolePrefix { get; set; } 
+ ```
 
-```
+
 ## Getting support 👷
 If you encounter any bugs, don't hesitate to submit an [issue](https://github.com/simplify9/CqApi/issues). We'll get back to you promptly! 
  
