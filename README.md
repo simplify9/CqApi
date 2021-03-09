@@ -6,7 +6,7 @@
 
 _CqApi_ is a library written with the goal of reducing boilerplate code in mind, making building APIs and endpoints a quicker, more efficient process. 
 
-_CqApi_ takes handlers charged with performing specific tasks, attached to a certain interface, and it automatically uses the folder structure to determine the route so with this, you longer have to build controllers. All that's left for the user to do is to build the resource folders appropriately.
+_CqApi_ takes handlers charged with performing specific tasks, attached to a certain interface, and it automatically uses the namespace to determine the route so with this, you longer have to build controllers. All that's left for the user to do is to build the resource folders appropriately.
 
 ### _CqApi_'s folder structure 
 _CqApi_ is built in such a way that it allows for users to declare routes through an intuitive design:
@@ -17,8 +17,7 @@ Resources:
  -THE HANDLERS
  ```
 
-_CqApi_ automatically uses the folder structure to determine the route of the handlers. With this, you no longer have to build controllers. All there is to do is build the resource folders appropriately, allowing _CqApi_ to study the route and build a controller based on its structure. 
-
+_CqApi_ automatically uses the folder structure to determine the route of the handlers. With this, you no longer have to build controllers. All that's left for the user to do is to have the right namespace for the handler, and this is often handled through the IDE and the folder structure of the files.
 Through this design, all the boilerplate of HTTP methods is handled in the background. 
 
 ## Setting up _CqApi_
