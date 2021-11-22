@@ -297,6 +297,12 @@ namespace SW.CqApi
                         Content = stringResult,
                         ContentType = cqApiResult.ContentType,
                     };
+                    
+                else if (cqApiResult.Result is byte[])
+                {
+                    var fileInBytes = cqApiResult.Result as byte[];
+                    return new FileContentResult(fileInBytes, cqApiResult.ContentType.ToString());
+                }
 
                 else
                     Ok(cqApiResult.Result);
