@@ -103,7 +103,10 @@ namespace SW.CqApi.Utils
                 paramterDict[param.Name] = TypeUtils.ExplodeParameter(param.ParameterType, components, maps);
             }
 
-            string bodyName = relevantParameters[0].ParameterType.Name;
+            var bodyName = "";
+            if(relevantParameters.Count != 0)
+                bodyName = relevantParameters[0].ParameterType.Name;
+
 
             var requestBody = new OpenApiRequestBody
             {
