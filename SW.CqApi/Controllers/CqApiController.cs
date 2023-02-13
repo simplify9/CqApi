@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using SW.PrimitiveTypes;
-using Newtonsoft.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using SW.CqApi.Extensions;
@@ -21,23 +20,23 @@ namespace SW.CqApi
     [AllowAnonymous]
     public class CqApiController : ControllerBase
     {
-        private readonly IServiceProvider serviceProvider;
-        private readonly ServiceDiscovery serviceDiscovery;
-        private readonly ILogger<CqApiController> logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ServiceDiscovery _serviceDiscovery;
+        private readonly ILogger<CqApiController> _logger;
         private readonly CqApiOptions _options;
 
         public CqApiController(IServiceProvider serviceProvider)
         {
-            this.serviceProvider = serviceProvider;
-            logger = serviceProvider.GetService<ILogger<CqApiController>>();
-            serviceDiscovery = serviceProvider.GetService<ServiceDiscovery>();
-            _options = this.serviceProvider.GetService<CqApiOptions>();
+            _serviceProvider = serviceProvider;
+            _logger = serviceProvider.GetService<ILogger<CqApiController>>();
+            _serviceDiscovery = serviceProvider.GetService<ServiceDiscovery>();
+            _options = this._serviceProvider.GetService<CqApiOptions>();
         }
 
         [HttpGet("_roles")]
         public ActionResult<IDictionary<string, string>> GetRoles()
         {
-            var sd = serviceProvider.GetService<ServiceDiscovery>();
+            var sd = _serviceProvider.GetService<ServiceDiscovery>();
             return Ok(sd.GetRoles().OrderBy(e => e).ToDictionary(k => k, v => v));
         }
 
@@ -50,23 +49,16 @@ namespace SW.CqApi
         [HttpGet("swagger.json")]
         public ActionResult<string> GetOpenApiDocument()
         {
-            var sd = serviceProvider.GetService<ServiceDiscovery>();
+            var sd = _serviceProvider.GetService<ServiceDiscovery>();
             return Ok(sd.GetOpenApiDocument());
         }
 
         [HttpGet("{resourceName}")]
         public Task<IActionResult> Get(
             string resourceName,
-            //[FromQuery(Name = "filter")] string[] filters,
-            //[FromQuery(Name = "sort")] string[] sorts,
-            //[FromQuery(Name = "size")] int pageSize,
-            //[FromQuery(Name = "page")] int pageIndex,
-            //[FromQuery(Name = "count")] bool countRows,
-            //[FromQuery(Name = "search")] string searchPhrase,
             [FromQuery(Name = "lookup")] bool lookup)
         {
-            var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "get");
-            //var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
+            var handlerInfo = _serviceDiscovery.ResolveHandler(resourceName, "get");
             return ExecuteHandler(handlerInfo, null, null, lookup);
         }
 
@@ -77,7 +69,7 @@ namespace SW.CqApi
             string key,
             [FromQuery(Name = "lookup")] bool lookup)
         {
-            var handler = serviceDiscovery.ResolveHandler(resourceName, $"get/key/{token}");
+            var handler = _serviceDiscovery.ResolveHandler(resourceName, $"get/key/{token}");
             return await ExecuteHandler(handler, key, null, lookup);
         }
 
@@ -85,41 +77,31 @@ namespace SW.CqApi
         public async Task<IActionResult> GetWithToken(
             string resourceName,
             string token,
-            //[FromQuery(Name = "filter")] string[] filters,
-            //[FromQuery(Name = "sort")] string[] sorts,
-            //[FromQuery(Name = "size")] int pageSize,
-            //[FromQuery(Name = "page")] int pageIndex,
-            //[FromQuery(Name = "search")] string searchPhrase,
-            //[FromQuery(Name = "count")] bool countRows,
             [FromQuery(Name = "lookup")] bool lookup)
         {
-            //var searchyRequest = new SearchyRequest(filters, sorts, pageSize, pageIndex, countRows);
-            //if (string.IsNullOrEmpty(searchyRequest.ToString())) searchyRequest = null;
-
-            if (serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
+            if (_serviceDiscovery.TryResolveHandler(resourceName, $"get/{token}", out var handlerInfo))
                 return await ExecuteHandler(handlerInfo, null, null, lookup);
 
-            else if (serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
+            if (_serviceDiscovery.TryResolveHandler(resourceName, "get/key", out handlerInfo))
                 return await ExecuteHandler(handlerInfo, token, null, lookup);
 
-            else
-                return NotFound();
+            return NotFound();
         }
 
         [HttpPost("{resourceName}")]
         public async Task<IActionResult> Post(string resourceName, [FromBody] object body)
         {
-            var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "post");
+            var handlerInfo = _serviceDiscovery.ResolveHandler(resourceName, "post");
             return await ExecuteHandler(handlerInfo, null, body);
         }
 
         [HttpPost("{resourceName}/{token}")]
         public async Task<IActionResult> PostWithToken(string resourceName, string token, [FromBody] object body)
         {
-            if (serviceDiscovery.TryResolveHandler(resourceName, $"post/{token}", out var handlerInfo))
+            if (_serviceDiscovery.TryResolveHandler(resourceName, $"post/{token}", out var handlerInfo))
                 return await ExecuteHandler(handlerInfo, null, body);
 
-            else if (serviceDiscovery.TryResolveHandler(resourceName, "post/key", out handlerInfo))
+            else if (_serviceDiscovery.TryResolveHandler(resourceName, "post/key", out handlerInfo))
                 return await ExecuteHandler(handlerInfo, token, body);
 
             else
@@ -130,22 +112,22 @@ namespace SW.CqApi
         public async Task<IActionResult> PostWithKeyAndCommandName(string resourceName, string key, string command,
             [FromBody] object body)
         {
-            var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, $"post/key/{command}");
+            var handlerInfo = _serviceDiscovery.ResolveHandler(resourceName, $"post/key/{command}");
             return await ExecuteHandler(handlerInfo, key, body);
         }
 
         [HttpDelete("{resourceName}/{key}")]
         public async Task<IActionResult> Delete(string resourceName, string key)
         {
-            var handlerInfo = serviceDiscovery.ResolveHandler(resourceName, "delete/key");
+            var handlerInfo = _serviceDiscovery.ResolveHandler(resourceName, "delete/key");
             return await ExecuteHandler(handlerInfo, key);
         }
 
-        async Task<bool> ValidateInput(object input)
+        private async Task<bool> ValidateInput(object input)
         {
-            var tvalidator = typeof(IValidator<>).MakeGenericType(input.GetType());
+            var validatorType = typeof(IValidator<>).MakeGenericType(input.GetType());
 
-            if (!(serviceProvider.GetService(tvalidator) is IValidator validator)) return true;
+            if (_serviceProvider.GetService(validatorType) is not IValidator validator) return true;
 
             var context = new ValidationContext<object>(input);
             var validationResult = await validator.ValidateAsync(context);
@@ -164,33 +146,32 @@ namespace SW.CqApi
             return Content(serializedResults, "application/json");
         }
 
-        async Task<IActionResult> ExecuteHandler(HandlerInfo handlerInfo, string key, object body = null,
+        private async Task<IActionResult> ExecuteHandler(HandlerInfo handlerInfo, string key, object body = null,
             bool lookup = false)
         {
-            var handlerInstance = await serviceProvider.GetHandlerInstance(handlerInfo);
+            var handlerInstance = await _serviceProvider.GetHandlerInstance(handlerInfo);
 
             if (handlerInfo.NormalizedInterfaceType == typeof(ISearchyHandler))
             {
                 var searchyRequest = new SearchyRequest(Request.QueryString.Value);
                 var result = await handlerInstance.Invoke(searchyRequest, lookup, null);
-                if (lookup)
-                    return StatusCode(206, result);
-
-
-                return SendOkResult(result);
+                return lookup ? StatusCode(206, result) : Ok(result);
             }
-            else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler))
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler))
             {
                 var result = await handlerInstance.Invoke();
-                return SendOkResult(result);
+                return HandleResult(result);
             }
-            else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
             {
                 var request = Request.Query.GetInstance(handlerInfo.ArgumentTypes[0]);
                 var result = await handlerInstance.Invoke(request);
-                return SendOkResult(result);
+                return HandleResult(result);
             }
-            else if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<,>))
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<,>))
             {
                 object keyParam;
                 try
@@ -204,19 +185,21 @@ namespace SW.CqApi
 
                 var request = Request.Query.GetInstance(handlerInfo.ArgumentTypes[1]);
                 var result = await handlerInstance.Invoke(keyParam, request);
-                return SendOkResult(result);
+                return HandleResult(result);
             }
-            else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
             {
                 var result = await handlerInstance.Invoke();
                 return HandleResult(result);
             }
-            else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<>))
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<>))
             {
                 object typedParam;
                 try
                 {
-                    typedParam = _options.Serializer.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[0]);
+                    typedParam = _options.Serializer.DeserializeObject(body?.ToString(), handlerInfo.ArgumentTypes[0]);
                 }
                 catch (Exception ex)
                 {
@@ -227,14 +210,15 @@ namespace SW.CqApi
                 var result = await handlerInstance.Invoke(typedParam);
                 return HandleResult(result);
             }
-            else if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<,>))
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<,>))
             {
                 object typedParam;
                 object keyParam;
                 try
                 {
                     keyParam = key.ConvertValueToType(handlerInfo.ArgumentTypes[0]);
-                    typedParam = _options.Serializer.DeserializeObject(body.ToString(), handlerInfo.ArgumentTypes[1]);
+                    typedParam = _options.Serializer.DeserializeObject(body?.ToString(), handlerInfo.ArgumentTypes[1]);
                 }
                 catch (Exception ex)
                 {
@@ -245,7 +229,8 @@ namespace SW.CqApi
                 var result = await handlerInstance.Invoke(keyParam, typedParam);
                 return HandleResult(result);
             }
-            else if (handlerInfo.NormalizedInterfaceType == typeof(IGetHandler<>))
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(IGetHandler<>))
             {
                 object keyParam;
                 try
@@ -260,11 +245,10 @@ namespace SW.CqApi
                 var result = await handlerInstance.Invoke(keyParam, lookup);
                 if (result == null)
                     return NotFound();
-                if (lookup)
-                    return StatusCode(206, result);
-                return HandleResult(result);
+                return lookup ? StatusCode(206, result) : HandleResult(result);
             }
-            else if (handlerInfo.NormalizedInterfaceType == typeof(IDeleteHandler<>))
+
+            if (handlerInfo.NormalizedInterfaceType == typeof(IDeleteHandler<>))
             {
                 object keyParam;
                 try
@@ -279,46 +263,58 @@ namespace SW.CqApi
                 await handlerInstance.Invoke(keyParam);
                 return Accepted();
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
         }
 
-        IActionResult HandleResult(object result)
+        private IActionResult HandleResult(object result)
         {
-            if (result is ICqApiResult cqApiResult)
+            switch (result)
             {
-                foreach (var kvp in cqApiResult.Headers)
-                    Response.Headers.Add(kvp.Key, kvp.Value);
-
-                if (cqApiResult.Status == CqApiResultStatus.UnderProcessing)
-                    return Accepted(cqApiResult.Result.ToString());
-
-                else if (cqApiResult.Status == CqApiResultStatus.ChangedLocation)
-                    return RedirectPermanent(cqApiResult.Result.ToString());
-
-                else if (cqApiResult.Result == null)
-                    return NoContent();
-
-                else if (cqApiResult.Result is string stringResult)
-                    return new ContentResult
-                    {
-                        StatusCode = cqApiResult.Status == CqApiResultStatus.Ok ? 200 : 400,
-                        Content = stringResult,
-                        ContentType = cqApiResult.ContentType,
-                    };
-
-                else if (cqApiResult.Result is byte[])
+                case ICqApiResult cqApiResult:
                 {
-                    var fileInBytes = cqApiResult.Result as byte[];
-                    return new FileContentResult(fileInBytes, cqApiResult.ContentType.ToString());
-                }
-            }
-            else if (result == null)
-                return NoContent();
+                    foreach (var kvp in cqApiResult.Headers)
+                        Response.Headers.Add(kvp.Key, kvp.Value);
 
-            return SendOkResult(result);
+                    switch (cqApiResult.Status)
+                    {
+                        case CqApiResultStatus.UnderProcessing:
+                            return Accepted(cqApiResult.Result.ToString());
+                        case CqApiResultStatus.ChangedLocation:
+                            return RedirectPermanent(cqApiResult.Result.ToString() ?? string.Empty);
+                        case CqApiResultStatus.Ok:
+                        case CqApiResultStatus.Error:
+                        default:
+                        {
+                            switch (cqApiResult.Result)
+                            {
+                                case null:
+                                    return NoContent();
+                                case string stringResult:
+                                    return new ContentResult
+                                    {
+                                        StatusCode = cqApiResult.Status == CqApiResultStatus.Ok ? 200 : 400,
+                                        Content = stringResult,
+                                        ContentType = cqApiResult.ContentType,
+                                    };
+                                case byte[] bytes:
+                                {
+                                    return new FileContentResult(bytes, cqApiResult.ContentType);
+                                }
+                            }
+
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+                case null:
+                    return NoContent();
+            }
+
+            var res = SendOkResult(result);
+            return res;
         }
     }
 }

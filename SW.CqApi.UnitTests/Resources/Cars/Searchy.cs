@@ -11,7 +11,8 @@ namespace SW.CqApi.UnitTests.Resources.Cars
     {
         public async Task<object> Handle(SearchyRequest searchyRequest, bool lookup = false, string searchPhrase = null)
         {
-            return searchyRequest.ToString();
+            var x =  searchyRequest.ToString();
+            return x;
         }
     }
 }
