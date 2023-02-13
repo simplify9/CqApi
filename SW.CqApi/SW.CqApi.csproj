@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6</TargetFramework>
     <PackageId>SimplyWorks.CqApi</PackageId>
     <Authors>Simplify9</Authors>
     <Product>SimplyWorks.CqApi</Product>
@@ -16,11 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="10.3.4" />
-    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.2.3" />
+    <PackageReference Include="FluentValidation" Version="11.5.0" />
+    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.0" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.14" />
-    <PackageReference Include="Scrutor" Version="3.3.0" />
-    <PackageReference Include="SimplyWorks.HttpExtensions" Version="5.0.0" />
+    <PackageReference Include="Scrutor" Version="4.2.1" />
+    <PackageReference Include="SimplyWorks.HttpExtensions" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

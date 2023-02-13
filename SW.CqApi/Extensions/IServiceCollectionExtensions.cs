@@ -37,7 +37,9 @@ namespace SW.CqApi
                 .FromAssemblies(assemblies)
                 .AddClasses(classes => classes.AssignableTo<IValidator>())
                 .AsImplementedInterfaces().WithTransientLifetime());
-
+            
+            
+            
             services.AddHttpContextAccessor();
             services.AddScoped<RequestContext>();
             services.AddRouting(options =>

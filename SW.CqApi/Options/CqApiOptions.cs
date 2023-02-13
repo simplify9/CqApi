@@ -4,6 +4,8 @@ using SW.CqApi.Options;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace SW.CqApi
 {
@@ -65,12 +67,15 @@ namespace SW.CqApi
 
         public string RolePrefix { get; set; }
 
+        public Newtonsoft.Json.JsonSerializer Serializer { get; set; }
+
         public CqApiOptions()
         {
 
             Maps = new TypeMaps();
             AuthOptions = new CqApiAuthOptions();
             ResourceDescriptions = new ResourceDescriptions();
+            Serializer = new Newtonsoft.Json.JsonSerializer();
         }
 
 
