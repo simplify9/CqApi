@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using SW.CqApi.SampleWeb.Model;
 using SW.HttpExtensions;
 using SW.PrimitiveTypes;
 
@@ -29,36 +31,38 @@ namespace SW.CqApi.SampleWeb
                 config.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
 
+            var serializer = new JsonSerializer();
+            serializer.Converters.Add(new PropertyMatchSpecificationJsonConverter());
+
             services.AddCqApi(config =>
             {
                 config.ResourceDescriptions.Add("Parcels", "Description test");
                 config.ProtectAll = true;
-                config.UrlPrefix = "api";  
+                config.UrlPrefix = "api";
+                config.Serializer = serializer;
             });
 
             services.AddRazorPages();
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).
-                AddCookie(options =>
-                {
-                    options.LoginPath = "/login";
-                    options.AccessDeniedPath = "/";
-                }).
-                AddJwtBearer(options =>
-                {
-                    options.RequireHttpsMetadata = false;
-                    options.SaveToken = true;
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
+            {
+                options.LoginPath = "/login";
+                options.AccessDeniedPath = "/";
+            }).AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
 
-                    options.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidIssuer = Configuration["Token:Issuer"],
-                        ValidAudience = Configuration["Token:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Token:Key"]))
-                    };
-                });
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = Configuration["Token:Issuer"],
+                    ValidAudience = Configuration["Token:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Token:Key"]))
+                };
+            });
 
             services.AddScoped<RequestContext>();
-            services.AddJwtTokenParameters(); 
+            services.AddJwtTokenParameters();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,11 +81,7 @@ namespace SW.CqApi.SampleWeb
 
             app.UseHttpAsRequestContext();
 
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/api/swagger.json", "My API V1");
-
-            });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/api/swagger.json", "My API V1"); });
 
             app.Use(async (context, next) =>
             {
