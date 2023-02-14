@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SW.CqApi.SampleWeb.Model;
 using SW.HttpExtensions;
 using SW.PrimitiveTypes;
@@ -31,15 +32,16 @@ namespace SW.CqApi.SampleWeb
                 config.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
 
-            var serializer = new JsonSerializer();
-            serializer.Converters.Add(new PropertyMatchSpecificationJsonConverter());
+            // var serializer = new JsonSerializer();
+            // serializer.Converters.Add(new PropertyMatchSpecificationJsonConverter());
+            // serializer.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
             services.AddCqApi(config =>
             {
                 config.ResourceDescriptions.Add("Parcels", "Description test");
                 config.ProtectAll = true;
                 config.UrlPrefix = "api";
-                config.Serializer = serializer;
+              //  config.Serializer = serializer;
             });
 
             services.AddRazorPages();
