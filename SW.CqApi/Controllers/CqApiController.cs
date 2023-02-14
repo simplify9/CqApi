@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SW.PrimitiveTypes;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json.Serialization;
 using SW.CqApi.Extensions;
 using SW.HttpExtensions;
 
@@ -142,6 +143,11 @@ namespace SW.CqApi
 
         private IActionResult SendOkResult(object result)
         {
+            if (result.GetType().IsPrimitive || result is decimal or string)
+            {
+                return Ok(result);
+            }
+
             var serializedResults = _options.Serializer.SerializeObject(result);
             return Content(serializedResults, "application/json");
         }
@@ -155,7 +161,7 @@ namespace SW.CqApi
             {
                 var searchyRequest = new SearchyRequest(Request.QueryString.Value);
                 var result = await handlerInstance.Invoke(searchyRequest, lookup, null);
-                return lookup ? StatusCode(206, result) : Ok(result);
+                return lookup ? StatusCode(206, result) : SendOkResult(result);
             }
 
             if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler))
