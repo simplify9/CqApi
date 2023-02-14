@@ -81,8 +81,13 @@ namespace SW.CqApi
             AuthOptions = new CqApiAuthOptions();
             ResourceDescriptions = new ResourceDescriptions();
             Serializer = new Newtonsoft.Json.JsonSerializer();
-            Serializer.ContractResolver = new CamelCasePropertyNamesContractResolver();
-
+            Serializer.ContractResolver = new CamelCasePropertyNamesContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy
+                {
+                    ProcessDictionaryKeys = false
+                }
+            };
         }
     }
 }
