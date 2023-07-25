@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SW.CqApi.UnitTests.Resources.Cars
 {
-    class Create : ICommandHandler<CreateCommand>
+    class Create : ICommandHandler<CreateCommand, object>
     {
         async public Task<object> Handle(CreateCommand request)
         {

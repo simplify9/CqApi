@@ -152,8 +152,15 @@ namespace SW.CqApi
                     var interfaceType = handler.Value.NormalizedInterfaceType;
                     var apiOperation = HandlerTypeMetadata.Handlers[interfaceType].OpenApiOperation.Clone();
                     apiOperation.Tags.Add(tag);
-                    var returns = handler.Value.HandlerType.GetCustomAttributes<ReturnsAttribute>();
+                    var returns = handler.Value.HandlerType.GetCustomAttributes<ReturnsAttribute>().ToList();
+                    returns.Add(new ReturnsAttribute()
+                    {
+                        Type = handler.Value.Method.ReturnType.GetGenericArguments()[0],
+                        StatusCode = 200
+                    });
+                        
                     var protect = handler.Value.HandlerType.GetCustomAttribute<ProtectAttribute>();
+                    
                     apiOperation.Responses = OpenApiUtils.GetOpenApiResponses(handler.Value.Method, returns, components, interfaceType.Name, options.Maps);
 
                     if (protect != null){
@@ -165,6 +172,7 @@ namespace SW.CqApi
                         string path = $"{apiPrefix}/{res.Key}";
                         initializePath(document, path);
                         apiOperation.Parameters = OpenApiUtils.GetOpenApiParameters(handler.Value.Method.GetParameters(), components, options.Maps);
+                        //apiOperation.RequestBody = OpenApiUtils.GetOpenApiResponses()
                         document.Paths[path].Operations.Add(OperationType.Get, apiOperation);
                     }
 

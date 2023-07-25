@@ -17,7 +17,7 @@ namespace SW.CqApi.UnitTests.Resources.Cars
         Suv
     }
 
-    public class QueryGen1 : IQueryHandler<CarDto>
+    public class QueryGen1 : IQueryHandler<CarDto, object>
     {
         public async Task<object> Handle(CarDto request)
         {

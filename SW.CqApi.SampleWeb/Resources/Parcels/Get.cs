@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
 
-    [Returns(Type = typeof(CarOwner), StatusCode = 200, Description = "If lookup is false")]
+    [Returns(Type = typeof(CarOwner), StatusCode = 201, Description = "If lookup is false")]
     [Returns(Type = typeof(string), StatusCode = 202, Description = "If lookup is true")]
-    public class Get : IGetHandler<int>
+    public class Get : IGetHandler<int, object>
     {
-        async public Task<object> Handle(int key, bool lookup = false)
+        async public Task<object> Handle(int key)
         {
             return  new 
             { 

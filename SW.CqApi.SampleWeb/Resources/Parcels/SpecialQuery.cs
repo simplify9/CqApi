@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
 
-    public class SpecialQuery : IQueryHandler<string, ConvertDto>
+    public class SpecialQuery : IQueryHandler<string, ConvertDto, object>
     {
         private readonly RequestContext context;
         public SpecialQuery(RequestContext context)

@@ -96,6 +96,30 @@ namespace SW.CqApi.Utils
                     Description = "Not found",
                 });
             }
+            
+            // if (!baseResponses.ContainsKey("200"))
+            // {
+            //     baseResponses.Add("200", new OpenApiResponse
+            //     {
+            //         Description = "Successful",
+            //         
+            //         Content =
+            //         {
+            //             ["application/json"] = new OpenApiMediaType
+            //             {
+            //                 
+            //                 Schema =  new OpenApiSchema
+            //                 {
+            //                     
+            //                     Type = info.ReturnType.FullName.Contains("Task")
+            //                         ? info.ReturnType.GenericTypeArguments[0].FullName
+            //                         : info.ReturnType.FullName,
+            //                 }
+            //             }
+            //         }
+            //     });
+            // }
+            
             return baseResponses;
         }
     }

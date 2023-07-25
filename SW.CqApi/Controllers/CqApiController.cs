@@ -164,20 +164,20 @@ namespace SW.CqApi
                 return lookup ? StatusCode(206, result) : SendOkResult(result);
             }
 
-            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler))
+            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
             {
                 var result = await handlerInstance.Invoke();
                 return HandleResult(result);
             }
 
-            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<>))
+            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<,>))
             {
                 var request = Request.Query.GetInstance(handlerInfo.ArgumentTypes[0]);
                 var result = await handlerInstance.Invoke(request);
                 return HandleResult(result);
             }
 
-            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<,>))
+            if (handlerInfo.NormalizedInterfaceType == typeof(IQueryHandler<,,>))
             {
                 object keyParam;
                 try
@@ -194,13 +194,13 @@ namespace SW.CqApi
                 return HandleResult(result);
             }
 
-            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler))
+            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<>))
             {
                 var result = await handlerInstance.Invoke();
                 return HandleResult(result);
             }
 
-            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<>))
+            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<,>))
             {
                 object typedParam;
                 try
@@ -217,7 +217,7 @@ namespace SW.CqApi
                 return HandleResult(result);
             }
 
-            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<,>))
+            if (handlerInfo.NormalizedInterfaceType == typeof(ICommandHandler<,,>))
             {
                 object typedParam;
                 object keyParam;
@@ -236,7 +236,7 @@ namespace SW.CqApi
                 return HandleResult(result);
             }
 
-            if (handlerInfo.NormalizedInterfaceType == typeof(IGetHandler<>))
+            if (handlerInfo.NormalizedInterfaceType == typeof(IGetHandler<,>))
             {
                 object keyParam;
                 try
@@ -253,8 +253,10 @@ namespace SW.CqApi
                     return NotFound();
                 return lookup ? StatusCode(206, result) : HandleResult(result);
             }
+            
+            
 
-            if (handlerInfo.NormalizedInterfaceType == typeof(IDeleteHandler<>))
+            if (handlerInfo.NormalizedInterfaceType == typeof(IDeleteHandler<,>))
             {
                 object keyParam;
                 try

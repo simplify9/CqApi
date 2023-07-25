@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SW.CqApi.UnitTests.Resources.Cars
 {
-    class Search : IQueryHandler
+    class Search : IQueryHandler<object>
     {
         public async Task<object> Handle()
         {

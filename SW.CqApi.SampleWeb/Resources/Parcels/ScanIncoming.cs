@@ -10,7 +10,7 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
     [HandlerName("ScanIncoming")]
     [Protect(RequireRole = true)]
     [Returns(Type = typeof(object), StatusCode = 202, Description = "lookup == false")]
-    public class ScanIncoming : ICommandHandler<ScanIncomingCommand>
+    public class ScanIncoming : ICommandHandler<ScanIncomingCommand, object>
     {
         private readonly RequestContext requestContext;
 

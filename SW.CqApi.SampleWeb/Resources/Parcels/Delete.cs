@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
-    class Delete : IDeleteHandler<int>
+    class Delete : IDeleteHandler<int, object>
     {
         public Task<object> Handle(int key)
         {

@@ -10,7 +10,7 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
 
     [Returns(Description = "", StatusCode = 201, Type = typeof(string))]
-    public class Create : ICommandHandler<CarDto>
+    public class Create : ICommandHandler<CarDto, object>
     {
         async public Task<object> Handle(CarDto request)
         {

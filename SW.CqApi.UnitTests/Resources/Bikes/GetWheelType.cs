@@ -12,7 +12,7 @@ namespace SW.CqApi.UnitTests.Resources.Bikes
     }
 
     [HandlerName("Wheel")]
-    public class GetWheelType : IQueryHandler<int, WheelDto>
+    public class GetWheelType : IQueryHandler<int, WheelDto, object>
     {
         public async Task<object> Handle(int key, WheelDto request)
         {

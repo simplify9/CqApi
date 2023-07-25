@@ -5,7 +5,7 @@ using SW.PrimitiveTypes;
 namespace SW.CqApi.SampleWeb.Resources.PropertyMatchSpecification;
 
 [Unprotect]
-public class CustomFilters : IQueryHandler
+public class CustomFilters : IQueryHandler<object>
 {
     public async Task<object> Handle()
     {

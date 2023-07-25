@@ -8,7 +8,7 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
 {
 
     [HandlerName("filters")]
-    public class Filters : IQueryHandler
+    public class Filters : IQueryHandler<object>
     {
         async public Task<object> Handle()
         {

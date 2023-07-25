@@ -9,6 +9,8 @@ namespace SW.CqApi.Utils
 {
     internal static class CustomAttributeUtils
     {
+        
+
         public static OpenApiResponses ToOpenApiResponses(this IEnumerable<ReturnsAttribute> attributes, OpenApiComponents components, TypeMaps maps)
         {
             var responses = new OpenApiResponses();

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SW.CqApi.UnitTests.Resources.Cars
 {
-    class Update : ICommandHandler<int,CarDto>
+    class Update : ICommandHandler<int,CarDto, object>
     {
         public async Task<object> Handle(int key, CarDto request)
         {

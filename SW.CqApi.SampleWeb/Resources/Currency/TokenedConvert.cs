@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SW.CqApi.SampleWeb.Resources.Currency
 {
     [HandlerName("convert")]
-    public class TokenedConvert: IQueryHandler<ConvertDto>
+    public class TokenedConvert: IQueryHandler<ConvertDto, object>
     {
         public async Task<object> Handle(ConvertDto request)
         {

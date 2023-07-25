@@ -6,7 +6,7 @@ namespace SW.CqApi.SampleWeb.Resources.Tests;
 
 [HandlerName("ReturnDict")]
 [Unprotect]
-public class ReturnDict : ICommandHandler<object>
+public class ReturnDict : ICommandHandler<object, object>
 {
     public async Task<object> Handle(object request)
     {

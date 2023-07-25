@@ -9,7 +9,7 @@ public class TestModel
     public IPropertyMatchSpecification MatchExpression { get; set; }
 }
 [Unprotect]
-public class Post : ICommandHandler<TestModel>
+public class Post : ICommandHandler<TestModel, object>
 {
     public async Task<object> Handle(TestModel request)
     {

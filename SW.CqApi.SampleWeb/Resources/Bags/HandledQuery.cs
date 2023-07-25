@@ -11,13 +11,17 @@ namespace SW.CqApi.SampleWeb.Resources.Bags
     {
         public string Q { get; set; }
     }
+    public class Rs
+    {
+        public string Q { get; set; }
+    }
 
     [HandlerName("special")]
-    public class HandledQuery : IQueryHandler<string, Rq>
+    public class HandledQuery : IQueryHandler<string, Rq,Rs>
     {
-        public async Task<object> Handle(string key, Rq request)
+        public async Task<Rs> Handle(string key, Rq request)
         {
-            return 1;
+            return new Rs(){Q = "samer"};
         }
     }
 }

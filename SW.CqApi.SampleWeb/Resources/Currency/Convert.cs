@@ -12,7 +12,7 @@ namespace SW.CqApi.SampleWeb.Resources.Currency
         public string From { get; set; }
         public string To { get; set; }
     }
-    public class Convert : IQueryHandler<ConvertDto>
+    public class Convert : IQueryHandler<ConvertDto,object>
     {
         public async Task<object> Handle(ConvertDto request)
         {

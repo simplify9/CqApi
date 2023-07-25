@@ -10,7 +10,7 @@ namespace SW.CqApi.UnitTests.Resources.Cars
     {
         public int Multiplier { get; set; }
     }
-    public class QueryGen2 : IQueryHandler<int, TestQDto>
+    public class QueryGen2 : IQueryHandler<int, TestQDto, object>
     {
         public async Task<object> Handle(int key, TestQDto request)
         {

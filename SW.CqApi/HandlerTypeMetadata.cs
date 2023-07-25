@@ -12,38 +12,18 @@ namespace SW.CqApi
         {
 
             {
-                typeof(ICommandHandler), new HandlerTypeMetadata
-                {
-
-                    Key = "post",
-                    OpenApiOperation = new OpenApiOperation
-                    {
-                        Description = "",
-                        Responses = new OpenApiResponses
-                        {
-                            ["200"] = new OpenApiResponse
-                            {
-                                Description = "OK",
-                            }
-                        }
-                    }                
-                }
-            },
-            {
                 typeof(ICommandHandler<>), new HandlerTypeMetadata
                 {
+
                     Key = "post",
                     OpenApiOperation = new OpenApiOperation
                     {
-
-
                         Description = "",
                         Responses = new OpenApiResponses
                         {
                             ["200"] = new OpenApiResponse
                             {
                                 Description = "OK",
-
                             }
                         }
                     }                
@@ -51,6 +31,26 @@ namespace SW.CqApi
             },
             {
                 typeof(ICommandHandler<,>), new HandlerTypeMetadata
+                {
+                    Key = "post",
+                    OpenApiOperation = new OpenApiOperation
+                    {
+
+
+                        Description = "",
+                        Responses = new OpenApiResponses
+                        {
+                            ["200"] = new OpenApiResponse
+                            {
+                                Description = "OK",
+
+                            }
+                        }
+                    }                
+                }
+            },
+            {
+                typeof(ICommandHandler<,,>), new HandlerTypeMetadata
                 {
                     Key = "post/key",
                     OpenApiOperation = new OpenApiOperation
@@ -71,7 +71,7 @@ namespace SW.CqApi
                 }
             },
             {
-                typeof(IQueryHandler), new HandlerTypeMetadata
+                typeof(IQueryHandler<>), new HandlerTypeMetadata
                 {
                     Key = "get",
                     OpenApiOperation = new OpenApiOperation
@@ -91,7 +91,7 @@ namespace SW.CqApi
                 }
             },
             {
-                typeof(IQueryHandler<>), new HandlerTypeMetadata
+                typeof(IQueryHandler<,>), new HandlerTypeMetadata
                 {
                     Key = "get",
                     OpenApiOperation = new OpenApiOperation
@@ -145,7 +145,7 @@ namespace SW.CqApi
                 }
             },
             {
-                typeof(IDeleteHandler<>), new HandlerTypeMetadata
+                typeof(IDeleteHandler<,>), new HandlerTypeMetadata
                 {
                     Key = "delete/key",
                     OpenApiOperation = new OpenApiOperation
@@ -165,7 +165,7 @@ namespace SW.CqApi
                 }
             },
             {
-                typeof(IGetHandler<>), new HandlerTypeMetadata
+                typeof(IGetHandler<,>), new HandlerTypeMetadata
                 {
                     Key = "get/key",
                     OpenApiOperation = new OpenApiOperation
@@ -185,7 +185,7 @@ namespace SW.CqApi
                 }
             },
             {
-                typeof(IQueryHandler<,>), new HandlerTypeMetadata
+                typeof(IQueryHandler<,,>), new HandlerTypeMetadata
                 {
                     Key = "get/key",
                     OpenApiOperation = new OpenApiOperation

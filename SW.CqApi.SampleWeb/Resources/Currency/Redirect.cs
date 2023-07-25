@@ -5,9 +5,9 @@ namespace SW.CqApi.SampleWeb.Resources.Currency
 {
     [HandlerName("redirect")]
     [Unprotect]
-    public class Redirect : IGetHandler<string>
+    public class Redirect : IGetHandler<string, object>
     {
-        public async Task<object> Handle(string key, bool lookup = false)
+        public async Task<object> Handle(string key)
         {
             return new CqApiResult<string>("https://simplify9.com")
             {

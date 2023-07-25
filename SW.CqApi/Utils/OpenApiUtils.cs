@@ -32,14 +32,14 @@ namespace SW.CqApi.Utils
         public static OpenApiResponses GetOpenApiResponses(MethodInfo methodInfo, IEnumerable<ReturnsAttribute> returnsAttributes, OpenApiComponents components, string InterfaceType, TypeMaps maps)
         {
             //var methodInfo = handlerInfo.Method;
-            var returnMediaType = new OpenApiMediaType
-            {
-                Schema = new OpenApiSchema
-                {
-                    Type = methodInfo.ReturnType.FullName.Contains("Task") ? methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName ,
-                }
-            };
-
+            // var returnMediaType = new OpenApiMediaType
+            // {
+            //     Schema = new OpenApiSchema
+            //     {
+            //         Type = methodInfo.ReturnType.FullName.Contains("Task") ? methodInfo.ReturnType.GenericTypeArguments[0].Name : methodInfo.ReturnType.FullName ,
+            //     }
+            // };
+            
             var responses = returnsAttributes
                 .ToOpenApiResponses(components, maps)
                 .GetDefaultResponses(methodInfo, InterfaceType);

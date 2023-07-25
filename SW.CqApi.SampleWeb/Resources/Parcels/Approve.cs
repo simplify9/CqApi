@@ -13,7 +13,7 @@ namespace SW.CqApi.SampleWeb.Resources.Parcels
     [HandlerName("approve")]
     [Protect(RequireRole=true)]
 
-    class Approve : ICommandHandler<int, ApproveCarCommand>
+    class Approve : ICommandHandler<int, ApproveCarCommand, object>
     {
         private readonly RequestContext requestContext;
 

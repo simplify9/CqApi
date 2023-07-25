@@ -5,7 +5,7 @@ namespace SW.CqApi.SampleWeb.Resources.Tests;
 
 [HandlerName("ReturnObject")]
 [Unprotect]
-public class ReturnObject : ICommandHandler<object>
+public class ReturnObject : ICommandHandler<object, object>
 {
     public async Task<object> Handle(object request)
     {

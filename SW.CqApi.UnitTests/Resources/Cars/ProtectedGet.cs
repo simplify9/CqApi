@@ -9,7 +9,7 @@ namespace SW.CqApi.UnitTests.Resources.Cars
 
     [HandlerName("protectedget")]
     [Protect]
-    class ProtectedGet : ICommandHandler<ProtectedGetCommand>
+    class ProtectedGet : ICommandHandler<ProtectedGetCommand, object>
     {
         public Task<object> Handle(ProtectedGetCommand request)
         {
