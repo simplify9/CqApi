@@ -39,7 +39,7 @@ namespace SW.CqApi.SampleWeb
             services.AddCqApi(config =>
             {
                 config.ResourceDescriptions.Add("Parcels", "Description test");
-                config.ProtectAll = true;
+                // config.ProtectAll = true;
                 config.UrlPrefix = "api";
               //  config.Serializer = serializer;
             });

@@ -13,9 +13,13 @@ namespace SW.CqApi
         public MethodInfo Method { get; set; }
 
 
-        public Task<object> Invoke(params object[] parameters)
+        public async Task<object> Invoke(params object[] parameters)
         {
-            return (Task<object>)Method.Invoke(Instance, parameters);
+            var task = (Task)Method.Invoke(Instance, parameters);
+            await task.ConfigureAwait(false);
+            var resultProperty = task.GetType().GetProperty("Result");
+            return resultProperty?.GetValue(task);
+            // return (Task<object>)Method.Invoke(Instance, parameters);
         }
 
     }

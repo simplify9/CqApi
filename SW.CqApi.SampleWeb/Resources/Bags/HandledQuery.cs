@@ -17,6 +17,7 @@ namespace SW.CqApi.SampleWeb.Resources.Bags
     }
 
     [HandlerName("special")]
+    [Unprotect]
     public class HandledQuery : IQueryHandler<string, Rq,Rs>
     {
         public async Task<Rs> Handle(string key, Rq request)
