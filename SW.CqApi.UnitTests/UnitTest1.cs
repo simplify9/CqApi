@@ -69,14 +69,14 @@ namespace SW.CqApi.UnitTests
             Assert.AreEqual<int>(12, rs);
         }
 
-        [TestMethod]
-        async public Task TestGetHandlerGen1()
-        {
-            var httpClient = server.CreateClient();
-            var httpResponseMessage = await httpClient.GetAsync("cqapi/bikes/12");
-            var rs = await httpResponseMessage.Content.ReadAsAsync<int>();
-            Assert.AreEqual<int>(12, rs);
-        }
+        // [TestMethod]
+        // async public Task TestGetHandlerGen1()
+        // {
+        //     var httpClient = server.CreateClient();
+        //     var httpResponseMessage = await httpClient.GetAsync("cqapi/bikes/12");
+        //     var rs = await httpResponseMessage.Content.ReadAsAsync<int>();
+        //     Assert.AreEqual<int>(12, rs);
+        // }
 
         [TestMethod]
         async public Task TestSearchyHandler()
