@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SW.PrimitiveTypes;
 using System;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -15,18 +16,21 @@ namespace SW.CqApi
         {
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<CqApiExceptionFilterAttribute>>();
 
-            if (context.Exception is SWException)
+            if (context.Exception is SWException || 
+                context.Exception is TargetInvocationException { InnerException: SWException })
             {
-                if (context.Exception is SWNotFoundException)
-                    context.Result = new NotFoundObjectResult(context.Exception.Message);
+                var exception = context.Exception is TargetInvocationException ? 
+                    context.Exception.InnerException : context.Exception;
+                if (exception is SWNotFoundException)
+                    context.Result = new NotFoundObjectResult(exception.Message);
 
-                else if (context.Exception is SWForbiddenException)
+                else if (exception is SWForbiddenException)
                     context.Result = new UnauthorizedResult();
 
-                else if (context.Exception is SWUnauthorizedException)
+                else if (exception is SWUnauthorizedException)
                     context.Result = new UnauthorizedResult();
 
-                else if (context.Exception is SWValidationException validationException)
+                else if (exception is SWValidationException validationException)
                 {
                     foreach (var kvp in validationException.Validations)
                         context.ModelState.AddModelError(kvp.Key, kvp.Value);
@@ -35,11 +39,11 @@ namespace SW.CqApi
                 }
                 else
                 {
-                    context.ModelState.AddModelError(context.Exception.GetType().Name, context.Exception.Message);
+                    context.ModelState.AddModelError(exception.GetType().Name, exception.Message);
                     context.Result = new BadRequestObjectResult(context.ModelState);
                 }
 
-                logger.LogWarning(context.Exception, string.Empty);
+                logger.LogWarning(exception, string.Empty);
             }
             else
                 logger.LogError(context.Exception, string.Empty);
