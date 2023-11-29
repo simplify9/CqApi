@@ -248,7 +248,7 @@ namespace SW.CqApi
                     throw new BadInputFormatException(ex);
                 }
 
-                var result = await handlerInstance.Invoke(keyParam, lookup);
+                var result = await handlerInstance.Invoke(keyParam);
                 if (result == null)
                     return NotFound();
                 return lookup ? StatusCode(206, result) : HandleResult(result);
